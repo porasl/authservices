@@ -30,7 +30,7 @@ public class AuthservicesApplication {
 					.firstname("Admin")
 					.lastname("Admin")
 					.email("info@inrik.com")
-					.password("Passw0rd")
+					.password("xxxxx")
 					.role(ADMIN)
 					.status(true)
 					.build();
@@ -40,7 +40,7 @@ public class AuthservicesApplication {
 					.firstname("manager")
 					.lastname("manager")
 					.email("info@bazaartoday.com")
-					.password("Passw0rd")
+					.password("xxxxx")
 					.role(MANAGER)
 					.status(true)
 					.build();
