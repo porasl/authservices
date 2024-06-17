@@ -53,6 +53,7 @@ public class AuthenticationService {
         .status(false)
         .approved(false)
         .blocked(false)
+        .activationCode(Long.toHexString(Double.doubleToLongBits(Math.random())))
         .createdDate((new Date()).getTime())
         .updatedDate((new Date()).getTime())
         .build();

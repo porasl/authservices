@@ -7,6 +7,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.inrik.authservices.auth.ActivateRequest;
+
 import java.security.Principal;
 import java.util.Optional;
 
@@ -44,22 +46,39 @@ public class UserService {
     	 String role = userAdmin.get().getRole().name();
     	 boolean blocked = userAdmin.get().getBlocked();
     	 boolean active = userAdmin.get().getStatus();
-    	 
-    	 
-    	//Get the user by email
-        Optional<User> user =  repository.findByEmail(request.getUserEmail());
-    	 
-         User retrievedUser = user.get();
-        if(user.isPresent()) {
-        	if (!passwordEncoder.matches(request.getCurrentPassword(), retrievedUser.getPassword())) {
-        		throw new IllegalStateException("Wrong password");
-        	}
-        	if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
+    	 if (role.equalsIgnoreCase("ADMIN") && !blocked && active) {
+    		 //Get the user by email
+    		 Optional<User> user =  repository.findByEmail(request.getUserEmail());
+    		 User retrievedUser = user.get();
+    		 if(user.isPresent()) {
+    			 if (!passwordEncoder.matches(request.getCurrentPassword(), retrievedUser.getPassword())) {
+    				 throw new IllegalStateException("Wrong password");
+    			 }
+    			 if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
         		throw new IllegalStateException("Password are not the same");
-        	}
-        	retrievedUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        	repository.save(retrievedUser);
+    			 }
+    			 retrievedUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    			 repository.save(retrievedUser);
+    		 }
         }
+    }
+    
+    public Boolean activate(ActivateRequest request) {
+    	
+    	// Get the user from Request
+    	var emailAddress = request.getEmailAddress();
+    	var activationCode = request.getActivationCode();
+    	Optional<User> user =  repository.findByEmail(emailAddress);
+		 if(user.isPresent()) {
+			 User exitingUser = user.get();
+			 if(exitingUser.getActivationCode().equals(activationCode)) {
+				 exitingUser.setApproved(true);
+				 exitingUser.setStatus(true);
+			 }
+			 repository.save(exitingUser);
+			 return true;
+		 }
+		 return false;
     }
     
     public void deleteUser(DeleteUserRequest request, Principal connectedUser) {

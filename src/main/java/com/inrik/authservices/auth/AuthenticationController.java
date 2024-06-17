@@ -35,12 +35,21 @@ public class AuthenticationController {
   ) {
     return ResponseEntity.ok(authservice.register(request));
   }
+  
   @PostMapping("/authenticate")
   public ResponseEntity<AuthenticationResponse> authenticate(
       @RequestBody AuthenticationRequest request
   ) {
     return ResponseEntity.ok(authservice.authenticate(request));
   }
+  
+  @PostMapping("/activate")
+  public ResponseEntity<Boolean> activate(
+      @RequestBody ActivateRequest request
+  ) {
+    return ResponseEntity.ok(userService.activate(request));
+  }
+  
 
   @PostMapping("/refresh-token")
   public void refreshToken(
@@ -49,8 +58,6 @@ public class AuthenticationController {
   ) throws IOException {
 	  authservice.refreshToken(request, response);
   }
-  
-  private final UserService service;
 
   @PatchMapping("/changePasswordByUser")
   public ResponseEntity<?> changePasswordByUser(
