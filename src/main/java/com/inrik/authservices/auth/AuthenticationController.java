@@ -37,11 +37,11 @@ public class AuthenticationController {
   }
   
   @PostMapping("/authenticate")
-  public ResponseEntity<AuthenticationResponse> authenticate(
-      @RequestBody AuthenticationRequest request
+  public ResponseEntity<AuthenticationResponse> authenticate(HttpServletRequest request
   ) {
     return ResponseEntity.ok(authservice.authenticate(request));
   }
+  
   
   @PostMapping("/activate")
   public ResponseEntity<Boolean> activate(

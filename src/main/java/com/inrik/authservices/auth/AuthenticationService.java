@@ -71,24 +71,44 @@ public class AuthenticationService {
         .build();
   }
 
-  public AuthenticationResponse authenticate(AuthenticationRequest request) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            request.getEmail(),
-            request.getPassword()
-        )
-    );
-    var user = repository.findByEmail(request.getEmail())
-        .orElseThrow();
+  public AuthenticationResponse authenticate(HttpServletRequest request) {
+//    authenticationManager.authenticate(
+//        new UsernamePasswordAuthenticationToken(
+//            request.getEmail(),
+//            request.getPassword()
+//        )
+//    );
+	  
+	String token = getToken(request);
+	String userEmail = jwtService.extractUsername(token);
+    var user = repository.findByEmail(userEmail).orElseThrow();
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
     return AuthenticationResponse.builder()
         .accessToken(jwtToken)
-            .refreshToken(refreshToken)
-        .build();
+            .refreshToken(refreshToken).build();
   }
+  
+  public AuthenticationResponse authenticateWithToken(AuthenticationRequest request) {
+	    authenticationManager.authenticate(
+	        new UsernamePasswordAuthenticationToken(
+	            request.getEmail(),
+	            request.getPassword()
+	        )
+	    );
+	    var user = repository.findByEmail(request.getEmail())
+	        .orElseThrow();
+	    var jwtToken = jwtService.generateToken(user);
+	    var refreshToken = jwtService.generateRefreshToken(user);
+	    revokeAllUserTokens(user);
+	    saveUserToken(user, jwtToken);
+	    return AuthenticationResponse.builder()
+	        .accessToken(jwtToken)
+	            .refreshToken(refreshToken)
+	        .build();
+	  }
 
   private void saveUserToken(User user, String jwtToken) {
     var token = Token.builder()
@@ -138,5 +158,13 @@ public class AuthenticationService {
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
       }
     }
+  }
+  
+  public String getToken(HttpServletRequest request) {
+	  final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+	  if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+		  return "";
+	  }
+	  return authHeader.substring(7);
   }
 }
