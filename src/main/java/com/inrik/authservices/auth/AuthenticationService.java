@@ -71,24 +71,27 @@ public class AuthenticationService {
         .build();
   }
 
-  public AuthenticationResponse authenticate(HttpServletRequest request) {
-//    authenticationManager.authenticate(
-//        new UsernamePasswordAuthenticationToken(
-//            request.getEmail(),
-//            request.getPassword()
-//        )
-//    );
-	  
-	String token = getToken(request);
-	String userEmail = jwtService.extractUsername(token);
-    var user = repository.findByEmail(userEmail).orElseThrow();
-    var jwtToken = jwtService.generateToken(user);
-    var refreshToken = jwtService.generateRefreshToken(user);
-    revokeAllUserTokens(user);
-    saveUserToken(user, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
-            .refreshToken(refreshToken).build();
+  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            request.getEmail(),
+            request.getPassword()
+        )
+    );
+	 
+	 Optional<User> user =  repository.findByEmail(request.getEmail());
+	 User retrievedUser = user.get();
+	 if (!passwordEncoder.matches(request.getPassword(), retrievedUser.getPassword())) {
+				 throw new IllegalStateException("Wrong password");
+	  }
+			 
+	  var jwtToken = jwtService.generateToken(retrievedUser);
+	  var refreshToken = jwtService.generateRefreshToken(retrievedUser);
+	  revokeAllUserTokens(retrievedUser);
+	  saveUserToken(retrievedUser, jwtToken);
+	  return AuthenticationResponse.builder()
+					 .accessToken(jwtToken)
+					 .refreshToken(refreshToken).build();
   }
   
   public AuthenticationResponse authenticateWithToken(AuthenticationRequest request) {

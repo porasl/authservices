@@ -12,7 +12,7 @@ Response are: 1) JWT token  2) Refresh token
 
 
 
-POST  method /auth/authenticateWithCredentials
+POST  method /auth/authenticate
 payload: {
     "email": "",
     "password":""
@@ -22,9 +22,9 @@ payload: {
 
 POST  method /auth/authenticateWithToken
 payload: {
-    "email": "",
-    "password":""
+    "email": ""
     }
+put the JWT token with authorization key to the header
 Response are: 1) JWT token  2) Refresh token
 
 
