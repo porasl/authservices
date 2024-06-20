@@ -24,7 +24,7 @@ POST  method /auth/authenticateWithToken
 payload: {
     "email": ""
     }
-put the JWT token with authorization key to the header
+put the JWT token with authorization key in the request header
 Response are: 1) JWT token  2) Refresh token
 
 

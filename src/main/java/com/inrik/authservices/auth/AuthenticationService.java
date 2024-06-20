@@ -72,13 +72,6 @@ public class AuthenticationService {
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-//    authenticationManager.authenticate(
-//        new UsernamePasswordAuthenticationToken(
-//            request.getEmail(),
-//            request.getPassword()
-//        )
-//    );
-	 
 	 Optional<User> user =  repository.findByEmail(request.getEmail());
 	 User retrievedUser = user.get();
 	 if (!passwordEncoder.matches(request.getPassword(), retrievedUser.getPassword())) {
@@ -95,22 +88,24 @@ public class AuthenticationService {
   }
   
   public AuthenticationResponse authenticateWithToken(
-          HttpServletRequest request, HttpServletResponse response) throws IOException{
+          HttpServletRequest request, AuthenticationRequest authenticationRequest){
 		    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 		    final String token;
-		    final String userEmail;
+		    final String userEmail = authenticationRequest.getEmail();
 		    token = authHeader.substring(7);
-	    var userName = jwtService.extractUsername(token);
+	    var userNameInToken = jwtService.extractUsername(token);
 	   
 	    // Get the user based on the user in the token
 	    var jwtToken = "";
 	    var refreshToken = "";
-	    //temp
-	    if(userName.trim().toUpperCase().equals(userName.trim().toUpperCase())) {
-	    	//jwtToken = jwtService.generateToken(userInToen);
-	    	//refreshToken = jwtService.generateRefreshToken(user);
-	    	//revokeAllUserTokens(user);
-	    	//saveUserToken(user, jwtToken);
+	   
+	    if(userNameInToken.trim().toUpperCase().equals(userEmail.trim().toUpperCase())) {
+	    	 Optional<User> savedUser = repository.findByEmail(userEmail);
+	    	 User retrievedUser = savedUser.get();
+	    	jwtToken = jwtService.generateToken(retrievedUser);
+	    	refreshToken = jwtService.generateRefreshToken(retrievedUser);
+	    	revokeAllUserTokens(retrievedUser);
+	    	saveUserToken(retrievedUser, jwtToken);
 	    	} else {
 	    		 throw new IllegalStateException("Wrong email address");
 	    	}
