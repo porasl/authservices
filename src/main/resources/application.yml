@@ -8,8 +8,8 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
   datasource:
     url: jdbc:mysql://localhost:3306/apst
-    username: root
-    password: Passw0rd!
+    username: xxxxxx
+    password: xxxxxx
     driverClassName: com.mysql.cj.jdbc.Driver
     driver-class-name: com.mysql.cj.jdbc.Driver
     maxConnections: 25
