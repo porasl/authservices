@@ -42,6 +42,11 @@ public class AuthenticationController {
     return ResponseEntity.ok(authservice.authenticate(request));
   }
   
+  @PostMapping("/authenticateWithToken")
+  public ResponseEntity<AuthenticationResponse> authenticateWithToken(HttpServletRequest request,
+	      HttpServletResponse response) throws IOException {
+    return ResponseEntity.ok(authservice.authenticateWithToken(request,response));
+  }
   
   @PostMapping("/activate")
   public ResponseEntity<Boolean> activate(

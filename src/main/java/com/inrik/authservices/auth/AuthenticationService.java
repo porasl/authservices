@@ -72,12 +72,12 @@ public class AuthenticationService {
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            request.getEmail(),
-            request.getPassword()
-        )
-    );
+//    authenticationManager.authenticate(
+//        new UsernamePasswordAuthenticationToken(
+//            request.getEmail(),
+//            request.getPassword()
+//        )
+//    );
 	 
 	 Optional<User> user =  repository.findByEmail(request.getEmail());
 	 User retrievedUser = user.get();
@@ -94,20 +94,27 @@ public class AuthenticationService {
 					 .refreshToken(refreshToken).build();
   }
   
-  public AuthenticationResponse authenticateWithToken(AuthenticationRequest request) {
-	    authenticationManager.authenticate(
-	        new UsernamePasswordAuthenticationToken(
-	            request.getEmail(),
-	            request.getPassword()
-	        )
-	    );
-	    var user = repository.findByEmail(request.getEmail())
-	        .orElseThrow();
-	    var jwtToken = jwtService.generateToken(user);
-	    var refreshToken = jwtService.generateRefreshToken(user);
-	    revokeAllUserTokens(user);
-	    saveUserToken(user, jwtToken);
-	    return AuthenticationResponse.builder()
+  public AuthenticationResponse authenticateWithToken(
+          HttpServletRequest request, HttpServletResponse response) throws IOException{
+		    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+		    final String token;
+		    final String userEmail;
+		    token = authHeader.substring(7);
+	    var userName = jwtService.extractUsername(token);
+	   
+	    // Get the user based on the user in the token
+	    var jwtToken = "";
+	    var refreshToken = "";
+	    //temp
+	    if(userName.trim().toUpperCase().equals(userName.trim().toUpperCase())) {
+	    	//jwtToken = jwtService.generateToken(userInToen);
+	    	//refreshToken = jwtService.generateRefreshToken(user);
+	    	//revokeAllUserTokens(user);
+	    	//saveUserToken(user, jwtToken);
+	    	} else {
+	    		 throw new IllegalStateException("Wrong email address");
+	    	}
+	    	return AuthenticationResponse.builder()
 	        .accessToken(jwtToken)
 	            .refreshToken(refreshToken)
 	        .build();
