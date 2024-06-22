@@ -44,7 +44,7 @@ public class AuthenticationController {
   
   @PostMapping("/authenticateWithToken")
   public ResponseEntity<AuthenticationResponse> authenticateWithToken(HttpServletRequest request,
-		  @RequestBody AuthenticationRequest authenticationRequest) {
+		  @RequestBody AuthenticationRequest authenticationRequest) throws IOException{
     return ResponseEntity.ok(authservice.authenticateWithToken(request, authenticationRequest));
   }
   
@@ -66,16 +66,9 @@ public class AuthenticationController {
 
   @PatchMapping("/changePasswordByUser")
   public ResponseEntity<?> changePasswordByUser(
-        @RequestBody ChangePasswordRequest changeRequest, HttpServletRequest request) {
-	  String token = request.getHeader("Authorization");
-      token = token.substring(7, token.length());
-	  
-	  if(!jwtService.isTokenValid(token)) {
-		  System.err.println("Token is expired");
-		  return ResponseEntity.badRequest().build();
-	  }
-	  String userId = jwtService.extractUsername(token); 
-	  userService.changePasswordByUser(userId, changeRequest);
+        @RequestBody ChangePasswordRequest changeRequest) {
+	 
+	  userService.changePasswordByUser(changeRequest);
       return ResponseEntity.ok().build();
   }
   

@@ -23,9 +23,9 @@ public class UserService {
 	@Autowired
     private  UserRepository repository;
     
-    public void changePasswordByUser(String userId, ChangePasswordRequest request) {
+    public void changePasswordByUser(ChangePasswordRequest request) {
     	//Get the user by email
-        Optional<User> user =  repository.findByEmail(userId);
+        Optional<User> user =  repository.findByEmail(request.getUserEmail());
          User retrievedUser = user.get();
         if(user.isPresent()) {
         	if (!passwordEncoder.matches(request.getCurrentPassword(), retrievedUser.getPassword())) {
