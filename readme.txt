@@ -49,4 +49,16 @@ PayloadBody:
 }
 
 No Authorization Token
-     
+---------------------------
+/auth/deleteByUser
+{
+    "userEmail": "",
+    "password": ""
+}
+
+-------------
+/auth/deleteByAdmin
+{
+    "userEmail": ""
+}
+ Admin Authorization Token    
