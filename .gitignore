@@ -32,3 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 src/main/java/com/inrik/authservices/AuthservicesApplication.java
+src/main/java/com/inrik/authservices/AuthservicesApplication.java
+src/main/resources/application.yml
+src/main/resources/application.yml

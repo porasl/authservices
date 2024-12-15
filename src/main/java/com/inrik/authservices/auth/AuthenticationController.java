@@ -3,6 +3,8 @@ package com.inrik.authservices.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import springfox.documentation.annotations.ApiIgnore;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,9 +18,14 @@ import com.inrik.authservices.user.ChangePasswordRequest;
 import com.inrik.authservices.user.DeleteUserRequest;
 import com.inrik.authservices.user.UserService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 import java.io.IOException;
 import java.security.Principal;
 
+@Api(tags = "Authentication")
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -28,53 +35,60 @@ public class AuthenticationController {
   private final UserService userService;
   private final JwtService jwtService;
 
-  
+  @ApiOperation(value = "Register a new user")
   @PostMapping("/register")
   public ResponseEntity<AuthenticationResponse> register(
-      @RequestBody RegisterRequest request
+		@ApiParam(value = "Register request body") @RequestBody RegisterRequest request
   ) {
     return ResponseEntity.ok(authservice.register(request));
   }
   
+  @ApiOperation(value = "Authenticate a user")
   @PostMapping("/authenticate")
-  public ResponseEntity<AuthenticationResponse> authenticate( @RequestBody AuthenticationRequest request
+  public ResponseEntity<AuthenticationResponse> authenticate( 
+	 @ApiParam(value = "Authentication request body") @RequestBody AuthenticationRequest request
   ) {
     return ResponseEntity.ok(authservice.authenticate(request));
   }
   
+  @ApiOperation(value = "Authenticate a user with token")
   @PostMapping("/authenticateWithToken")
   public ResponseEntity<AuthenticationResponse> authenticateWithToken(HttpServletRequest request,
 		  @RequestBody AuthenticationRequest authenticationRequest) throws IOException{
     return ResponseEntity.ok(authservice.authenticateWithToken(request, authenticationRequest));
   }
   
+  @ApiOperation(value = "Activate a user")
   @PostMapping("/activate")
   public ResponseEntity<Boolean> activate(
-      @RequestBody ActivateRequest request
+		  @ApiParam(value = "Activate request body") @RequestBody ActivateRequest request
   ) {
     return ResponseEntity.ok(userService.activate(request));
   }
   
-
+  @ApiOperation(value = "Refresh token")
   @PostMapping("/refresh-token")
   public void refreshToken(
-      HttpServletRequest request,
-      HttpServletResponse response
+		  @ApiIgnore HttpServletRequest request,
+		  @ApiIgnore HttpServletResponse response
   ) throws IOException {
 	  authservice.refreshToken(request, response);
   }
 
+  @ApiOperation(value = "Change password by user")
   @PatchMapping("/changePasswordByUser")
   public ResponseEntity<?> changePasswordByUser(
-        @RequestBody ChangePasswordRequest changeRequest) {
+		  @ApiParam(value = "Change password request body") @RequestBody ChangePasswordRequest changeRequest) {
 	 
 	  userService.changePasswordByUser(changeRequest);
       return ResponseEntity.ok().build();
   }
   
+  @ApiOperation(value = "Change password by admin")
   @PatchMapping("/changePasswordByAdmin")
   public ResponseEntity<?> changePasswordByAdmin(
-        @RequestBody ChangePasswordRequest changeRequest, HttpServletRequest request) {
+		  @ApiParam(value = "Change password request body") @RequestBody ChangePasswordRequest changeRequest,
+		  @ApiIgnore HttpServletRequest request) {
 	  String token = request.getHeader("Authorization");
       token = token.substring(7, token.length());
 	  
@@ -88,9 +102,12 @@ public class AuthenticationController {
       return ResponseEntity.ok().build();
   }
   
+  @ApiOperation(value = "Delete user")
   @DeleteMapping("/deleteUser")
   public ResponseEntity<?> deleteUser(
-        @RequestBody DeleteUserRequest request, Principal connectedUser) {
+		  @ApiParam(value = "Delete user request body") 
+		  @RequestBody DeleteUserRequest request, 
+		  @ApiIgnore Principal connectedUser) {
 	  userService.deleteUser(request, connectedUser);
       return ResponseEntity.ok().build();
   }

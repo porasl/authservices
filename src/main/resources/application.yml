@@ -7,9 +7,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   datasource:
-    url: jdbc:mysql://localhost:3306/apst
-    username: xxxxxx
-    password: xxxxxx
+    url: jdbc:mysql://localhost:3306/users
+    username: root
+    password: passw0rd
     driverClassName: com.mysql.cj.jdbc.Driver
     driver-class-name: com.mysql.cj.jdbc.Driver
     maxConnections: 25
@@ -20,6 +20,16 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
+
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path:/swagger-ui.html
+   
 application:
   security:
     jwt:

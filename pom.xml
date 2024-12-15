@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.4</version>
+		<version>3.4.0</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.inrik</groupId>
@@ -126,11 +126,23 @@
 			<artifactId>spring-plugin-core</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
+		<dependency> <groupId>org.projectlombok</groupId> 
+		 <artifactId>lombok</artifactId> 
+		 <version>1.18.20</version> 
+		 <scope>provided</scope> 
+		 </dependency>
+		 
+		 <dependency> 
+		 	<groupId>io.springfox</groupId> 
+		 	<artifactId>springfox-boot-starter</artifactId> 
+		 	<version>3.0.0</version> 
+		 </dependency> 
+		 
+		 <dependency> 
+		 	<groupId>io.springfox</groupId> 
+		 	<artifactId>springfox-swagger-ui</artifactId> 
+		 	<version>3.0.0</version> 
+		 </dependency>
 
 	</dependencies>
 
