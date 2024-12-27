@@ -9,11 +9,11 @@
 		<version>3.4.0</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.inrik</groupId>
+	<groupId>com.porasl</groupId>
 	<artifactId>authservice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>authservice</name>
-	<description>Inrik project for Spring Boot</description>
+	<description>Authservice project for Spring Boot</description>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
