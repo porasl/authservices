@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.1</version>
+		<version>3.4.0</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.porasl</groupId>
-	<artifactId>authservice</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>authservices</artifactId>
+	<version>1.0.0</version>
 	<name>authservice</name>
 	<description>Authservice project for Spring Boot</description>
 	<properties>

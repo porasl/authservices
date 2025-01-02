@@ -59,7 +59,7 @@ public class SecurityConfiguration {
     @Autowired
     private LogoutHandler logoutHandler;
 
-    @Bean
+    @Bean(name = "authServicesSecurityFilterChain")
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
