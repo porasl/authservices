@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserMongoRepository extends JpaRepository<User, Integer> {
 	 
-	public User findByFirstName(String firstName);
-	public List<User> findByLastName(String lastName);
+	public User findByFirstname(String firstName);
+	public List<User> findByLastname(String lastName);
 
   Optional<User> findByEmail(String email);
 

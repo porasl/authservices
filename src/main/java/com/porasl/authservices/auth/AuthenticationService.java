@@ -44,15 +44,15 @@ public class AuthenticationService {
   public AuthenticationResponse register(RegisterRequest request) {
 	
     var user = User.builder()
-        .firstName(request.getFirstname())
-        .lastName(request.getLastname())
+        .firstname(request.getFirstname())
+        .lastname(request.getLastname())
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
         .role(request.getRole())
         .status(false)
         .approved(false)
         .blocked(false)
-        .activationCode(Long.toHexString(Double.doubleToLongBits(Math.random())))
+        .activationcode(Long.toHexString(Double.doubleToLongBits(Math.random())))
         .createdDate((new Date()).getTime())
         .updatedDate((new Date()).getTime())
         .build();

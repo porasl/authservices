@@ -44,7 +44,7 @@ public class UserService {
     	
     	 Optional<User> userAdmin =  repository.findByEmail(adminUserId);
     	 String role = userAdmin.get().getRole().name();
-    	 boolean blocked = userAdmin.get().getBlocked();
+    	 boolean blocked = userAdmin.get().isBlocked();
     	 boolean active = userAdmin.get().getStatus();
     	 if (role.equalsIgnoreCase("ADMIN") && !blocked && active) {
     		 //Get the user by email
@@ -71,7 +71,7 @@ public class UserService {
     	Optional<User> user =  repository.findByEmail(emailAddress);
 		 if(user.isPresent()) {
 			 User exitingUser = user.get();
-			 if(exitingUser.getActivationCode().equals(activationCode)) {
+			 if(exitingUser.getActivationcode().equals(activationCode)) {
 				 exitingUser.setApproved(true);
 				 exitingUser.setStatus(true);
 			 }

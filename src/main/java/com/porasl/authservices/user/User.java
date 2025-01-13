@@ -39,23 +39,23 @@ public class User implements UserDetails {
 	@Id
 	@GeneratedValue
 	private long id;
-	private String firstName;
-	private String lastName;
+	private String firstname;
+	private String lastname;
 	private String email;
 	private String password;
-	private String activationCode;
+	private String activationcode;
 	private boolean status;
 	private int type;
-	private int updatedBy;
+	private int updatedby;
 	private boolean approved;
 	private boolean blocked;
 
-	@Column(name = "updated_date")
+	@Column(name = "updateddate")
 	@Temporal(TemporalType.TIMESTAMP)
 	private long updatedDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "created_date")
+	@Column(name = "createddate")
 	private long createdDate;
 
 	@Enumerated(EnumType.STRING)
@@ -107,7 +107,7 @@ public class User implements UserDetails {
 		this.status = status;
 	}
 
-	public boolean getBlocked() {
+	public boolean isBlocked() {
 		return blocked;
 	}
 
