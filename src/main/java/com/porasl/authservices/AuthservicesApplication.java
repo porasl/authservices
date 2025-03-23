@@ -12,10 +12,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import com.porasl.authservices.auth.AuthenticationService;
 import com.porasl.authservices.auth.RegisterRequest;
 
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
 @SpringBootApplication
-@EnableSwagger2
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class AuthservicesApplication {
 

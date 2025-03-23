@@ -47,8 +47,11 @@ public class SecurityConfiguration {
             "/configuration/ui",
             "/configuration/security",
             "/swagger-ui/**",
-            "/webjars/**",
-            "/swagger-ui.html"};
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/auth/swagger-ui.html",
+            "/auth/index.html",
+            "/webjars/**"};
     
     @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;
@@ -66,12 +69,17 @@ public class SecurityConfiguration {
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
                                 .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
-                                .requestMatchers("/swagger-ui/**","/api-docs",
+                                .requestMatchers(
+                                		"/swagger-ui/**",
+                                		"/api-docs",
                                         "/configuration/ui",
                                         "/swagger-resources/**",
                                         "/configuration/security",
                                         "/swagger-ui.html",
-                                        "/webjars/**").permitAll()
+                                        "/webjars/**",
+                                        "/v3/api-docs/**",
+                                        "/auth/index.html"
+                                        ).permitAll()
                                 .requestMatchers(GET, "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
                                 .requestMatchers(POST, "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
                                 .requestMatchers(PUT, "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
