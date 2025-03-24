@@ -1,11 +1,15 @@
 package com.porasl.authservices.auth;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.security.Principal;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.porasl.authservices.config.JwtService;
 import com.porasl.authservices.user.ChangePasswordRequest;
@@ -15,10 +19,9 @@ import com.porasl.authservices.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Hidden;
-
-import java.io.IOException;
-import java.security.Principal;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Authentication", description = "Endpoints for user authentication and account management")
 @RestController
@@ -33,7 +36,8 @@ public class AuthenticationController {
   @Operation(summary = "Register a new user")
   @PostMapping("/register")
   public ResponseEntity<AuthenticationResponse> register(
-      @Parameter(description = "Register request body") @RequestBody RegisterRequest request
+      @Parameter(description = "Register request body")
+      @RequestBody RegisterRequest request
   ) {
     return ResponseEntity.ok(authservice.register(request));
   }

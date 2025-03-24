@@ -1,5 +1,6 @@
 
 API:
+Swagger: http://localhost:8080/auth/swagger-ui/index.html
 
 Post method  /auth/register  creates an inactive user
 POST: /auth/register

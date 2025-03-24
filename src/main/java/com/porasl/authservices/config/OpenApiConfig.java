@@ -17,8 +17,8 @@ import io.swagger.v3.oas.annotations.servers.Server;
                         email = "info@porasl.com",
                         url = "https://porasl.com"
                 ),
-                description = "OpenApi documentation for Spring Security",
-                title = "OpenApi specification - Porasl",
+                description = "OpenApi documentation for Spring Security - AuthServices",
+                title = "OpenApi specification - Porasl AuthServices",
                 version = "1.0",
                 license = @License(
                         name = "Licence name",
@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 ),
                 @Server(
                         description = "PROD ENV",
-                        url = "https://porasl.com/course"
+                        url = "https://porasl.com"
                 )
         },
         security = {
