@@ -65,24 +65,21 @@ public class SecurityConfiguration {
 
     @Bean(name = "authServicesSecurityFilterChain")
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable) // Disable CSRF for testing
-       
-        .requiresChannel(channel ->
-        channel.anyRequest().requiresSecure()) // Comment or remove this to allow HTTP
-     
-            .authorizeHttpRequests(req ->
-            				req.requestMatchers("/auth/register").permitAll()
-            					.requestMatchers("/auth/**").permitAll()
-                            .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
-                            .requestMatchers(GET, "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
-                            .requestMatchers(POST, "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
-                            .requestMatchers(PUT, "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
-                            .requestMatchers(DELETE, "/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
-                            .anyRequest().authenticated() // All other endpoints require authentication
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Use stateless sessions for JWT
-            .authenticationProvider(authenticationProvider) // JWT Authentication Provider
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
+    	http.csrf(AbstractHttpConfigurer::disable)
+        // Ensure HTTP access is allowed (remove HTTPS enforcement if present)
+        .authorizeHttpRequests(req ->
+            req.requestMatchers("/auth/register").permitAll() // Allow unauthenticated access
+               .requestMatchers("/auth/**").permitAll() // Allow access for other `/auth/**` endpoints
+               .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
+               .requestMatchers(GET, "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
+               .requestMatchers(POST, "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
+               .requestMatchers(PUT, "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
+               .requestMatchers(DELETE, "/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
+               .anyRequest().authenticated() // All other endpoints require authentication
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session management
+        .authenticationProvider(authenticationProvider) // Authentication Provider configuration
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .logout(logout ->
                     logout.logoutUrl("/auth/logout")
                             .addLogoutHandler(logoutHandler)
@@ -91,7 +88,4 @@ public class SecurityConfiguration {
 
         return http.build();
     }
-
-
-    
 }

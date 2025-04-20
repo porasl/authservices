@@ -3,6 +3,7 @@ package com.porasl.authservices.auth;
 import java.io.IOException;
 import java.security.Principal;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,7 +40,12 @@ public class AuthenticationController {
       @Parameter(description = "Register request body")
       @RequestBody RegisterRequest request
   ) {
+   try {
     return ResponseEntity.ok(authservice.register(request));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Or a custom error response
+    }
+
   }
 
   @Operation(summary = "Authenticate a user")
