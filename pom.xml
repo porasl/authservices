@@ -59,10 +59,6 @@
     		<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
     		<version>2.2.0</version>
   		</dependency>
-     
-    <!-- Springdoc OpenAPI UI for Swagger documentation -->
-    	
-
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
