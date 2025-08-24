@@ -122,4 +122,120 @@ public class User implements UserDetails {
 	public void setApproved(boolean approved) {
 		this.approved = approved;
 	}
+
+	// Additional getters for missing methods
+	public Role getRole() {
+		return role;
+	}
+
+	public String getActivationcode() {
+		return activationcode;
+	}
+
+	public void setActivationcode(String activationcode) {
+		this.activationcode = activationcode;
+	}
+
+	// Additional getters/setters for missing methods
+	public long getId() {
+		return id;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	// Manual builder method
+	public static UserBuilder builder() {
+		return new UserBuilder();
+	}
+
+	public static class UserBuilder {
+		private String firstname;
+		private String lastname;
+		private String email;
+		private String password;
+		private String activationcode;
+		private Role role;
+		private boolean status;
+		private boolean approved;
+		private boolean blocked;
+		private long createdDate;
+		private long updatedDate;
+
+		public UserBuilder firstname(String firstname) {
+			this.firstname = firstname;
+			return this;
+		}
+
+		public UserBuilder lastname(String lastname) {
+			this.lastname = lastname;
+			return this;
+		}
+
+		public UserBuilder email(String email) {
+			this.email = email;
+			return this;
+		}
+
+		public UserBuilder password(String password) {
+			this.password = password;
+			return this;
+		}
+
+		public UserBuilder activationcode(String activationcode) {
+			this.activationcode = activationcode;
+			return this;
+		}
+
+		public UserBuilder role(Role role) {
+			this.role = role;
+			return this;
+		}
+
+		public UserBuilder status(boolean status) {
+			this.status = status;
+			return this;
+		}
+
+		public UserBuilder approved(boolean approved) {
+			this.approved = approved;
+			return this;
+		}
+
+		public UserBuilder blocked(boolean blocked) {
+			this.blocked = blocked;
+			return this;
+		}
+
+		public UserBuilder createdDate(long createdDate) {
+			this.createdDate = createdDate;
+			return this;
+		}
+
+		public UserBuilder updatedDate(long updatedDate) {
+			this.updatedDate = updatedDate;
+			return this;
+		}
+
+		public User build() {
+			User user = new User();
+			user.firstname = this.firstname;
+			user.lastname = this.lastname;
+			user.email = this.email;
+			user.password = this.password;
+			user.activationcode = this.activationcode;
+			user.role = this.role;
+			user.status = this.status;
+			user.approved = this.approved;
+			user.blocked = this.blocked;
+			user.createdDate = this.createdDate;
+			user.updatedDate = this.updatedDate;
+			return user;
+		}
+	}
 }

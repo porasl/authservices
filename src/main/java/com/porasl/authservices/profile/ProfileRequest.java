@@ -19,4 +19,15 @@ public class ProfileRequest {
     private String city;
     private Integer agegroup;
     private Integer interestListId;
+
+    // Manual getters to ensure compilation
+    public Integer getId() { return id; }
+    public String getType() { return type; }
+    public Integer getAccountId() { return accountId; }
+    public Integer getContactListId() { return contactListId; }
+    public Integer getInterestListId() { return interestListId; }
+    public String getLang() { return lang; }
+    public String getCountry() { return country; }
+    public String getCity() { return city; }
+    public Integer getAgegroup() { return agegroup; }
 }

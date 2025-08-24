@@ -19,4 +19,9 @@ public enum Permission {
     Permission (String permission) { 
     	this.permission = permission; 
     }
+
+    // Manual getter to ensure compilation
+    public String getPermission() {
+        return permission;
+    }
 }

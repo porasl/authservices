@@ -18,4 +18,8 @@ public class AuthenticationRequest {
 
   private String email;
   private String password;
+
+  // Manual getters to ensure compilation
+  public String getEmail() { return email; }
+  public String getPassword() { return password; }
 }

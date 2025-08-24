@@ -27,12 +27,17 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Authentication", description = "Endpoints for user authentication and account management")
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthenticationController {
 
-  private final AuthenticationService authservice;
-  private final UserService userService;
-  private final JwtService jwtService;
+  private AuthenticationService authservice;
+  private UserService userService;
+  private JwtService jwtService;
+
+  public AuthenticationController(AuthenticationService authservice, UserService userService, JwtService jwtService) {
+    this.authservice = authservice;
+    this.userService = userService;
+    this.jwtService = jwtService;
+  }
 
   @Operation(summary = "Register a new user")
   @PostMapping("/register")

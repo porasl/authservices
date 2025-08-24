@@ -25,19 +25,73 @@ public class Token {
 
   @Id
   @GeneratedValue
-  public Integer id;
+  private Integer id;
 
   @Column(unique = true)
-  public String token;
+  private String token;
 
   @Enumerated(EnumType.STRING)
-  public TokenType tokenType = TokenType.BEARER;
+  private TokenType tokenType = TokenType.BEARER;
 
-  public boolean revoked;
+  private boolean revoked;
 
-  public boolean expired;
+  private boolean expired;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
-  public User user;
+  private User user;
+
+  // Manual getters/setters to ensure compilation
+  public boolean isExpired() { return expired; }
+  public boolean isRevoked() { return revoked; }
+  public void setExpired(boolean expired) { this.expired = expired; }
+  public void setRevoked(boolean revoked) { this.revoked = revoked; }
+
+  // Manual builder method
+  public static TokenBuilder builder() {
+    return new TokenBuilder();
+  }
+
+  public static class TokenBuilder {
+    private String token;
+    private TokenType tokenType = TokenType.BEARER;
+    private boolean revoked;
+    private boolean expired;
+    private User user;
+
+    public TokenBuilder token(String token) {
+      this.token = token;
+      return this;
+    }
+
+    public TokenBuilder tokenType(TokenType tokenType) {
+      this.tokenType = tokenType;
+      return this;
+    }
+
+    public TokenBuilder revoked(boolean revoked) {
+      this.revoked = revoked;
+      return this;
+    }
+
+    public TokenBuilder expired(boolean expired) {
+      this.expired = expired;
+      return this;
+    }
+
+    public TokenBuilder user(User user) {
+      this.user = user;
+      return this;
+    }
+
+    public Token build() {
+      Token token = new Token();
+      token.token = this.token;
+      token.tokenType = this.tokenType;
+      token.revoked = this.revoked;
+      token.expired = this.expired;
+      token.user = this.user;
+      return token;
+    }
+  }
 }
