@@ -42,7 +42,6 @@ public class RegisterRequest {
     private boolean status;
     private String password;
     private Role role;
-    private String profileImageUrl;
 
     public RegisterRequestBuilder firstname(String firstname) {
       this.firstname = firstname;
@@ -74,11 +73,6 @@ public class RegisterRequest {
       return this;
     }
 
-    public RegisterRequestBuilder profileImageUrl(String profileImageUrl) {
-      this.profileImageUrl = profileImageUrl;
-      return this;
-    }
-
     public RegisterRequest build() {
       RegisterRequest request = new RegisterRequest();
       request.firstname = this.firstname;
@@ -87,7 +81,6 @@ public class RegisterRequest {
       request.password = this.password;
       request.role = this.role;
       request.status = this.status;
-      request.profileImageUrl = this.profileImageUrl;
       return request;
     }
   }

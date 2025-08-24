@@ -63,6 +63,8 @@ public class User implements UserDetails {
 
 	@OneToMany(mappedBy = "user")
 	private List<Token> tokens;
+	
+	private String profileImageUrl;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -136,6 +138,14 @@ public class User implements UserDetails {
 		this.activationcode = activationcode;
 	}
 
+	public String getProfileImageUrl() {
+		return profileImageUrl;
+	}
+
+	public void setProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
+	}
+
 	// Additional getters/setters for missing methods
 	public long getId() {
 		return id;
@@ -166,6 +176,7 @@ public class User implements UserDetails {
 		private boolean blocked;
 		private long createdDate;
 		private long updatedDate;
+		private String profileImageUrl;
 
 		public UserBuilder firstname(String firstname) {
 			this.firstname = firstname;
@@ -222,6 +233,11 @@ public class User implements UserDetails {
 			return this;
 		}
 
+		public UserBuilder profileImageUrl(String profileImageUrl) {
+			this.profileImageUrl = profileImageUrl;
+			return this;
+		}
+
 		public User build() {
 			User user = new User();
 			user.firstname = this.firstname;
@@ -235,6 +251,7 @@ public class User implements UserDetails {
 			user.blocked = this.blocked;
 			user.createdDate = this.createdDate;
 			user.updatedDate = this.updatedDate;
+			user.profileImageUrl = this.profileImageUrl;
 			return user;
 		}
 	}

@@ -53,6 +53,7 @@ public class AuthenticationService {
         .approved(false)
         .blocked(false)
         .activationcode(Long.toHexString(Double.doubleToLongBits(Math.random())))
+        .profileImageUrl(request.getProfileImageUrl())
         .createdDate((new Date()).getTime())
         .updatedDate((new Date()).getTime())
         .build();
