@@ -1,4 +1,4 @@
-package com.porasl.authservices.auth;
+package com.porasl.authservices.token;
 
 import com.porasl.authservices.user.Role;
 
