@@ -67,7 +67,10 @@ public class AuthenticationService {
     saveUserToken(savedUser.get(), jwtToken);
     return AuthenticationResponse.builder()
         .accessToken(jwtToken)
-            .refreshToken(refreshToken)
+        .refreshToken(refreshToken)
+        .firstname(savedUser.get().getFirstname())
+        .lastname(savedUser.get().getLastname())
+        .profileImageUrl(savedUser.get().getProfileImageUrl())
         .build();
   }
 
@@ -84,7 +87,11 @@ public class AuthenticationService {
 	  saveUserToken(retrievedUser, jwtToken);
 	  return AuthenticationResponse.builder()
 					 .accessToken(jwtToken)
-					 .refreshToken(refreshToken).build();
+					 .refreshToken(refreshToken)
+					 .firstname(retrievedUser.getFirstname())
+					 .lastname(retrievedUser.getLastname())
+					 .profileImageUrl(retrievedUser.getProfileImageUrl())
+					 .build();
   }
   
   public AuthenticationResponse authenticateWithToken(
@@ -97,11 +104,12 @@ public class AuthenticationService {
 	   
 	    // Get the user based on the user in the token
 	    var jwtToken = "";
-	    var refreshToken = "";
+    var refreshToken = "";
+    User retrievedUser = null;
 	   
 	    if(userNameInToken.trim().toUpperCase().equals(userEmail.trim().toUpperCase())) {
 	    	 Optional<User> savedUser = repository.findByEmail(userEmail);
-	    	 User retrievedUser = savedUser.get();
+         retrievedUser = savedUser.get();
 	    	jwtToken = jwtService.generateToken(retrievedUser);
 	    	refreshToken = jwtService.generateRefreshToken(retrievedUser);
 	    	revokeAllUserTokens(retrievedUser);
@@ -109,10 +117,13 @@ public class AuthenticationService {
 	    	} else {
 	    		 throw new IllegalStateException("Wrong email address");
 	    	}
-	    	return AuthenticationResponse.builder()
-	        .accessToken(jwtToken)
-	            .refreshToken(refreshToken)
-	        .build();
+	        return AuthenticationResponse.builder()
+        .accessToken(jwtToken)
+        .refreshToken(refreshToken)
+        .firstname(retrievedUser != null ? retrievedUser.getFirstname() : null)
+        .lastname(retrievedUser != null ? retrievedUser.getLastname() : null)
+        .profileImageUrl(retrievedUser != null ? retrievedUser.getProfileImageUrl() : null)
+        .build();
 	  }
 
   private void saveUserToken(User user, String jwtToken) {
@@ -159,6 +170,9 @@ public class AuthenticationService {
         var authResponse = AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .profileImageUrl(user.getProfileImageUrl())
                 .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
       }

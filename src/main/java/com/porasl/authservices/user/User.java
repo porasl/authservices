@@ -81,6 +81,15 @@ public class User implements UserDetails {
 		return email;
 	}
 
+	// Explicit getters to ensure availability even if Lombok processing is limited
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;

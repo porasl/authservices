@@ -21,6 +21,11 @@ public class AuthenticationResponse {
   @JsonProperty("refresh_token")
   private String refreshToken;
 
+  // Additional user info for frontend convenience
+  private String firstname;
+  private String lastname;
+  private String profileImageUrl;
+
   // Manual getters and builder to ensure compilation
   public String getAccessToken() { return accessToken; }
   public String getRefreshToken() { return refreshToken; }
@@ -32,6 +37,9 @@ public class AuthenticationResponse {
   public static class AuthenticationResponseBuilder {
     private String accessToken;
     private String refreshToken;
+    private String firstname;
+    private String lastname;
+    private String profileImageUrl;
 
     public AuthenticationResponseBuilder accessToken(String accessToken) {
       this.accessToken = accessToken;
@@ -43,10 +51,28 @@ public class AuthenticationResponse {
       return this;
     }
 
+    public AuthenticationResponseBuilder firstname(String firstname) {
+      this.firstname = firstname;
+      return this;
+    }
+
+    public AuthenticationResponseBuilder lastname(String lastname) {
+      this.lastname = lastname;
+      return this;
+    }
+
+    public AuthenticationResponseBuilder profileImageUrl(String profileImageUrl) {
+      this.profileImageUrl = profileImageUrl;
+      return this;
+    }
+
     public AuthenticationResponse build() {
       AuthenticationResponse response = new AuthenticationResponse();
       response.accessToken = this.accessToken;
       response.refreshToken = this.refreshToken;
+      response.firstname = this.firstname;
+      response.lastname = this.lastname;
+      response.profileImageUrl = this.profileImageUrl;
       return response;
     }
   }
