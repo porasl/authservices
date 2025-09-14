@@ -52,7 +52,8 @@ public class SecurityConfiguration {
             "/swagger-ui.html",
             "/auth/swagger-ui.html",
             "/auth/index.html",
-            "/webjars/**"};
+            "/webjars/**"
+            };
     
     @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;
@@ -71,6 +72,7 @@ public class SecurityConfiguration {
             req.requestMatchers("/auth/register").permitAll() // Allow unauthenticated access
                .requestMatchers("/auth/**").permitAll() // Allow access for other `/auth/**` endpoints
                .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
+               .requestMatchers("/internal/users/**").hasAuthority("SVC")
                .requestMatchers(GET, "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
                .requestMatchers(POST, "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
                .requestMatchers(PUT, "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
