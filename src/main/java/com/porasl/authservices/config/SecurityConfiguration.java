@@ -14,11 +14,11 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,56 +38,57 @@ import lombok.RequiredArgsConstructor;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    private static final String[] WHITE_LIST_URL = {
-    		"/auth/**",
-            "/api-docs",
-            "/api-docs",
-            "/api-docs/**",
-            "/swagger-resources",
-            "/swagger-resources/**",
-            "/configuration/ui",
-            "/configuration/security",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/swagger-ui.html",
-            "/auth/swagger-ui.html",
-            "/auth/index.html",
-            "/webjars/**"
-            };
-    
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthFilter;
-    
-    @Autowired
-    private AuthenticationProvider authenticationProvider;
-    
-    @Autowired
-    private LogoutHandler logoutHandler;
+  private static final String[] WHITE_LIST_URL = {
+      "/auth/**",
+      "/api-docs",
+      "/api-docs/**",
+      "/swagger-resources",
+      "/swagger-resources/**",
+      "/configuration/ui",
+      "/configuration/security",
+      "/swagger-ui/**",
+      "/v3/api-docs/**",
+      "/swagger-ui.html",
+      "/auth/swagger-ui.html",
+      "/auth/index.html",
+      "/webjars/**"
+  };
 
-    @Bean(name = "authServicesSecurityFilterChain")
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    	http.csrf(AbstractHttpConfigurer::disable)
-        // Ensure HTTP access is allowed (remove HTTPS enforcement if present)
-        .authorizeHttpRequests(req ->
-            req.requestMatchers("/auth/register").permitAll() // Allow unauthenticated access
-               .requestMatchers("/auth/**").permitAll() // Allow access for other `/auth/**` endpoints
-               .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
-               .requestMatchers("/internal/users/**").hasAuthority("SVC")
-               .requestMatchers(GET, "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
-               .requestMatchers(POST, "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
-               .requestMatchers(PUT, "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
-               .requestMatchers(DELETE, "/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
-               .anyRequest().authenticated() // All other endpoints require authentication
+  @Autowired private JwtAuthenticationFilter jwtAuthFilter;
+  @Autowired private AuthenticationProvider authenticationProvider;
+  @Autowired private LogoutHandler logoutHandler;
+
+  // ⬇️ Inject the component-managed filter (from @Component above)
+  @Autowired private ApiKeyAuthFilter apiKeyAuthFilter;
+
+  @Bean(name = "authServicesSecurityFilterChain")
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(req -> req
+            .requestMatchers(HttpMethod.HEAD, "/api/profile/image/**").permitAll()
+            .requestMatchers(HttpMethod.GET,  "/api/profile/image/**").permitAll()
+            .requestMatchers(WHITE_LIST_URL).permitAll()
+            .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
+            .requestMatchers("/internal/users/**").hasAuthority("SVC") // <— matches filter
+            .requestMatchers(GET, "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
+            .requestMatchers(POST, "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
+            .requestMatchers(PUT, "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
+            .requestMatchers(DELETE, "/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
+            .anyRequest().authenticated()
         )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session management
-        .authenticationProvider(authenticationProvider) // Authentication Provider configuration
+        .authenticationProvider(authenticationProvider)
+        // Order: API key filter first, then JWT
+        .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .logout(logout ->
-                    logout.logoutUrl("/auth/logout")
-                            .addLogoutHandler(logoutHandler)
-                            .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()) // Clear SecurityContext post-logout
-            );
+        .logout(logout -> logout
+            .logoutUrl("/auth/logout")
+            .addLogoutHandler(logoutHandler)
+            .logoutSuccessHandler((req, res, auth) -> SecurityContextHolder.clearContext())
+        );
 
-        return http.build();
-    }
+    return http.build();
+  }
 }

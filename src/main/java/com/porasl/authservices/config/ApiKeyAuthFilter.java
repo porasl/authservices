@@ -1,3 +1,4 @@
+
 package com.porasl.authservices.config;
 
 import java.io.IOException;
@@ -15,25 +16,41 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-//com.porasl.authservices.security.ApiKeyAuthFilter
 @Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
-@Value("${internal.token}") private String internalToken;
 
-@Override protected boolean shouldNotFilter(HttpServletRequest req) {
- return !req.getRequestURI().startsWith("/internal/");
-}
+  private final String headerName;
+  private final String expectedToken;
 
-@Override protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
-   throws IOException, ServletException {
- String header = req.getHeader("X-Internal-Token");
- if (internalToken != null && !internalToken.isBlank() && internalToken.equals(header)) {
-   var auth = new UsernamePasswordAuthenticationToken(
-       "internal-client", null, List.of(new SimpleGrantedAuthority("SVC")));
-   SecurityContextHolder.getContext().setAuthentication(auth);
-   chain.doFilter(req, res);
- } else {
-   res.setStatus(HttpServletResponse.SC_FORBIDDEN);
- }
-}
+  // We inject BOTH the header name (with a sensible default) and the token
+  public ApiKeyAuthFilter(
+      @Value("${internal.header:X-Internal-Token}") String headerName,
+      @Value("${internal.token}") String expectedToken) {
+    this.headerName = headerName;
+    this.expectedToken = expectedToken;
+  }
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+      throws IOException, ServletException {
+
+    if (req.getRequestURI() != null && req.getRequestURI().startsWith("/internal/")) {
+      String token = req.getHeader(headerName);
+      if (token == null || !token.equals(expectedToken)) {
+        res.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return;
+      }
+
+      // Mark request as authenticated with the SAME authority your config expects:
+      UsernamePasswordAuthenticationToken auth =
+          new UsernamePasswordAuthenticationToken(
+              "internal-client",
+              null,
+              List.of(new SimpleGrantedAuthority("SVC")) // <— matches hasAuthority("SVC")
+          );
+      SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    chain.doFilter(req, res);
+  }
 }
