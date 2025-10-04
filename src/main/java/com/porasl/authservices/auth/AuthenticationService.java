@@ -58,7 +58,7 @@ public class AuthenticationService {
         .updatedDate((new Date()).getTime())
         .build();
   
-    Optional<User> savedUser = repository.findByEmail(user.getEmail());
+    Optional<User> savedUser = repository.findByEmailIgnoreCase(user.getEmail());
    if(!savedUser.isPresent()) {
     	savedUser = Optional.ofNullable(repository.save(user));
     }
@@ -75,7 +75,7 @@ public class AuthenticationService {
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-	 Optional<User> user =  repository.findByEmail(request.getEmail());
+	 Optional<User> user =  repository.findByEmailIgnoreCase(request.getEmail());
 	 User retrievedUser = user.get();
 	 if (!passwordEncoder.matches(request.getPassword(), retrievedUser.getPassword())) {
 				 throw new IllegalStateException("Wrong password");
@@ -108,7 +108,7 @@ public class AuthenticationService {
     User retrievedUser = null;
 	   
 	    if(userNameInToken.trim().toUpperCase().equals(userEmail.trim().toUpperCase())) {
-	    	 Optional<User> savedUser = repository.findByEmail(userEmail);
+	    	 Optional<User> savedUser = repository.findByEmailIgnoreCase(userEmail);
          retrievedUser = savedUser.get();
 	    	jwtToken = jwtService.generateToken(retrievedUser);
 	    	refreshToken = jwtService.generateRefreshToken(retrievedUser);
@@ -161,7 +161,7 @@ public class AuthenticationService {
     refreshToken = authHeader.substring(7);
     userEmail = jwtService.extractUsername(refreshToken);
     if (userEmail != null) {
-      var user = this.repository.findByEmail(userEmail)
+      var user = this.repository.findByEmailIgnoreCase(userEmail)
               .orElseThrow();
       if (jwtService.isTokenValid(refreshToken, user)) {
         var accessToken = jwtService.generateToken(user);

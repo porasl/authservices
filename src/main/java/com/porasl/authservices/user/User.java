@@ -49,6 +49,7 @@ public class User implements UserDetails {
 	private int updatedby;
 	private boolean approved;
 	private boolean blocked;
+	private String phoneNumber;
 
 	@Column(name = "updateddate")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -79,6 +80,15 @@ public class User implements UserDetails {
 	@Override
 	public String getUsername() {
 		return email;
+	}
+	
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
 	}
 
 	// Explicit getters to ensure availability even if Lombok processing is limited
