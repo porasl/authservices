@@ -1,4 +1,4 @@
-package com.porasl.authservices.config;
+package com.porasl.authservices.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

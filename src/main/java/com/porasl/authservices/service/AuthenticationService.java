@@ -1,4 +1,4 @@
-package com.porasl.authservices.auth;
+package com.porasl.authservices.service;
 
 import java.io.IOException;
 import java.util.Date;
@@ -11,7 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.porasl.authservices.config.JwtService;
+import com.porasl.authservices.auth.AuthenticationRequest;
+import com.porasl.authservices.auth.AuthenticationResponse;
+import com.porasl.authservices.auth.RegisterRequest;
 import com.porasl.authservices.token.Token;
 import com.porasl.authservices.token.TokenRepository;
 import com.porasl.authservices.token.TokenType;

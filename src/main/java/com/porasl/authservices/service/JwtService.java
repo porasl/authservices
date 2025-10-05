@@ -1,4 +1,4 @@
-package com.porasl.authservices.config;
+package com.porasl.authservices.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

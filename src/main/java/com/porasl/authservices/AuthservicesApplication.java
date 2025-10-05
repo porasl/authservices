@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import com.porasl.authservices.auth.AuthenticationService;
 import com.porasl.authservices.auth.RegisterRequest;
+import com.porasl.authservices.service.AuthenticationService;
 
 @SpringBootApplication
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")

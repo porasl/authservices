@@ -1,6 +1,7 @@
-package com.porasl.authservices.controller; // <- move out of .controller
+package com.porasl.authservices.service; // <- move out of .controller
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.porasl.authservices.connection.UserConnection;
 import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.dto.ConnectionDto;
+import com.porasl.authservices.dto.FriendSummaryDto;
 import com.porasl.authservices.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -68,4 +70,9 @@ public class ConnectionService {
 
     return ConnectionDto.of(saved, /*created=*/true);
   }
+
+public List<FriendSummaryDto> listAcceptedConnections(long id) {
+	// TODO Auto-generated method stub
+	return null;
+}
 }

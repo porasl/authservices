@@ -1,4 +1,4 @@
-package com.porasl.authservices.auth;
+package com.porasl.authservices.controller;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.porasl.authservices.config.JwtService;
+import com.porasl.authservices.auth.AuthenticationRequest;
+import com.porasl.authservices.auth.AuthenticationResponse;
+import com.porasl.authservices.auth.RegisterRequest;
+import com.porasl.authservices.service.AuthenticationService;
+import com.porasl.authservices.service.JwtService;
 import com.porasl.authservices.user.ChangePasswordRequest;
 import com.porasl.authservices.user.DeleteUserRequest;
 import com.porasl.authservices.user.UserService;
