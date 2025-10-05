@@ -1,39 +1,34 @@
 package com.porasl.authservices.controller;
 
+//package com.porasl.authservices.controller;
+
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException.NotFound;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.porasl.authservices.connection.ConnectionService;
-import com.porasl.authservices.dto.CreateConnectionByEmailReq;
+import com.porasl.authservices.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
-import com.porasl.authservices.user.UserRepository;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth/api/me/connections")
 @RequiredArgsConstructor
 public class MeConnectionsController {
-  private final ConnectionService connectionService;
-  private final UserRepository userRepo; // has findByEmailIgnoreCase
 
-  @PostMapping
-  public ResponseEntity<ConnectionDto> createByEmail(
-      @AuthenticationPrincipal User requester,
-      @Valid @RequestBody CreateConnectionByEmailReq req) {
+private final ConnectionService connectionService;
 
-    String email = req.getTargetEmail().trim().toLowerCase();
-    User target = userRepo.findByEmailIgnoreCase(email)
-        .orElseThrow(() -> new NotFound("target not found"));
+@GetMapping("/accepted")
+public List<FriendSummaryDto> listAccepted(@AuthenticationPrincipal User me) {
+ if (me == null) {
+   throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No authenticated user");
+ }
+ return connectionService.listAcceptedConnections(me.getId());
+}
 
-    var dto = connectionService.request(requester.getId(), target.getId());
-    return new ResponseEntity<>(dto, dto.isNew() ? HttpStatus.CREATED : HttpStatus.OK);
-  }
+// ... your POST (createByEmail) stays as-is ...
 }

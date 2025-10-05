@@ -18,7 +18,7 @@ public class UserController {
     @GetMapping("/{email}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileResponse> getUserByEmail(@PathVariable String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailIgnoreCase(email)
                 .map(user -> {
                     UserProfileResponse response = new UserProfileResponse(
                         String.valueOf(user.getId()),

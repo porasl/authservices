@@ -21,7 +21,7 @@ class UserLookupController {
 
     @GetMapping        // GET /internal/users?emails=a@x&emails=b@y
     List<UserDTO> byEmails(@RequestParam String email) {
-        return repo.findByEmail(email).stream()
+        return repo.findByEmailIgnoreCase(email).stream()
             .map(u -> new UserDTO(u.getId(), u.getEmail(), u.getFirstname(), u.getLastname(), u.getProfileImageUrl()))
             .toList();
     }

@@ -1,58 +1,43 @@
 package com.porasl.authservices.connection;
 
-import com.porasl.authservices.user.User;
+import java.time.Instant;
+
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
+//package com.porasl.authservices.connection;
 
 @Entity
 @Table(
-name = "user_connection",
-uniqueConstraints = @UniqueConstraint(name = "uq_connection_pair", columnNames = {"user_id_a", "user_id_b"}),
-indexes = {
- @Index(name = "idx_user_a", columnList = "user_id_a"),
- @Index(name = "idx_user_b", columnList = "user_id_b"),
- @Index(name = "idx_status", columnList = "status")
-}
+name = "user_connections",
+uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "target_user_id"})
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class UserConnection {
-
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
 
-/** Always the smaller user id goes into userA, larger into userB (canonical order) */
-@ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "user_id_a", nullable = false,
- foreignKey = @ForeignKey(name = "fk_connection_user_a"))
-private User userA;
+@Column(name = "user_id", nullable = false)
+private Long userId;
 
-@ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "user_id_b", nullable = false,
- foreignKey = @ForeignKey(name = "fk_connection_user_b"))
-private User userB;
+@Column(name = "target_user_id", nullable = false)
+private Long targetUserId;
 
 @Enumerated(EnumType.STRING)
-@Column(nullable = false, length = 16)
-private ConnectionStatus status = ConnectionStatus.ACCEPTED;
+@Column(name = "status", nullable = false, length = 16)
+private Status status;
 
-@Column(nullable = false, updatable = false)
+@Column(name = "note", length = 255)         // <— NEW (nullable OK)
+private String note;
+
+@Column(name = "created_by", nullable = false)
+private Long createdBy;
+
+@Column(name = "created_at", nullable = false)
 private Instant createdAt;
 
-@Column(nullable = false)
+@Column(name = "updated_at", nullable = false)
 private Instant updatedAt;
 
-@PrePersist
-void onCreate() {
- final Instant now = Instant.now();
- createdAt = now;
- updatedAt = now;
-}
-
-@PreUpdate
-void onUpdate() {
- updatedAt = Instant.now();
-}
+public enum Status { PENDING, ACCEPTED, BLOCKED }
 }

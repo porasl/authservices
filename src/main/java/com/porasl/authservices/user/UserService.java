@@ -25,7 +25,7 @@ public class UserService {
     
     public void changePasswordByUser(ChangePasswordRequest request) {
     	//Get the user by email
-        Optional<User> user =  repository.findByEmail(request.getUserEmail());
+        Optional<User> user =  repository.findByEmailIgnoreCase(request.getUserEmail());
          User retrievedUser = user.get();
         if(user.isPresent()) {
         	if (!passwordEncoder.matches(request.getCurrentPassword(), retrievedUser.getPassword())) {
@@ -42,13 +42,13 @@ public class UserService {
     public void changePasswordByAdmin(ChangePasswordRequest request, String adminUserId) {
     	//Make sure userId belongs to an Admin
     	
-    	 Optional<User> userAdmin =  repository.findByEmail(adminUserId);
+    	 Optional<User> userAdmin =  repository.findByEmailIgnoreCase(adminUserId);
     	 String role = userAdmin.get().getRole().name();
     	 boolean blocked = userAdmin.get().isBlocked();
     	 boolean active = userAdmin.get().getStatus();
     	 if (role.equalsIgnoreCase("ADMIN") && !blocked && active) {
     		 //Get the user by email
-    		 Optional<User> user =  repository.findByEmail(request.getUserEmail());
+    		 Optional<User> user =  repository.findByEmailIgnoreCase(request.getUserEmail());
     		 User retrievedUser = user.get();
     		 if(user.isPresent()) {
     			 if (!passwordEncoder.matches(request.getCurrentPassword(), retrievedUser.getPassword())) {
@@ -68,7 +68,7 @@ public class UserService {
     	// Get the user from Request
     	var emailAddress = request.getEmailAddress();
     	var activationCode = request.getActivationCode();
-    	Optional<User> user =  repository.findByEmail(emailAddress);
+    	Optional<User> user =  repository.findByEmailIgnoreCase(emailAddress);
 		 if(user.isPresent()) {
 			 User exitingUser = user.get();
 			 if(exitingUser.getActivationcode().equals(activationCode)) {

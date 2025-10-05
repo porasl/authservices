@@ -1,44 +1,76 @@
-package com.porasl.authservices.connection;
+// package com.porasl.authservices.connection;
 
+import static com.porasl.authservices.connection.UserConnection.Status.ACCEPTED;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.porasl.authservices.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
-import org.springframework.web.bind.annotation.*;
+import com.porasl.authservices.user.UserRepository;
 
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
-@RestController
-@RequestMapping("/api/users/{userId}/connections")
-public class ConnectionController {
+@Service
+@RequiredArgsConstructor
+public class ConnectionService {
 
-private final ConnectionService service;
+  private final UserRepository userRepo;
+  private final UserConnectionRepository connRepo;
 
-public ConnectionController(ConnectionService service) {
- this.service = service;
-}
+  // ... your existing request(...) methods here ...
 
-@GetMapping
-public List<Map<String, Object>> list(@PathVariable long userId) {
- return service.listAcceptedConnections(userId).stream().map(this::toDto).toList();
-}
+  /** Return a de-duplicated list of accepted connections (the *other* user per edge). */
+  @Transactional(readOnly = true)
+  public List<FriendSummaryDto> listAcceptedConnections(Long me) {
+    // edges where I’m requester
+    List<UserConnection> a = connRepo.findByUserIdAndStatus(me, ACCEPTED);
+    // edges where I’m target
+    List<UserConnection> b = connRepo.findByTargetUserIdAndStatus(me, ACCEPTED);
 
-@PostMapping
-public Map<String, Object> add(@PathVariable long userId,
-                              @RequestBody Map<String, String> body) {
- long targetUserId = Long.parseLong(body.get("targetUserId"));
- User created = service.addAcceptedConnection(userId, targetUserId);
- return toDto(created);
-}
+    // preserve recent-first ordering by updatedAt
+    Comparator<UserConnection> byUpdatedDesc = Comparator
+        .comparing(UserConnection::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+        .reversed();
 
-private Map<String, Object> toDto(User u) {
- return Map.of(
-   "id", u.getId(),
-   "firstname", u.getFirstname(),
-   "lastname", u.getLastname(),
-   "email", u.getEmail(),
-   "profileImageUrl", u.getProfileImageUrl()
-   // "phoneNumber", ???  <-- your current User class has no phone field.
-   // If you need it, add `private String phoneNumber;` to User and re-run with ddl-auto=update.
- );
-}
+    List<UserConnection> all = new ArrayList<>(a.size() + b.size());
+    all.addAll(a);
+    all.addAll(b);
+    all.sort(byUpdatedDesc);
+
+    // collect the counterpart user ids in the listed order, de-duplicated
+    LinkedHashMap<Long, UserConnection> counterpartEdgeByUserId = new LinkedHashMap<>();
+    for (UserConnection uc : all) {
+      Long otherId = uc.getUserId().equals(me) ? uc.getTargetUserId() : uc.getUserId();
+      counterpartEdgeByUserId.putIfAbsent(otherId, uc);
+    }
+
+    if (counterpartEdgeByUserId.isEmpty()) return List.of();
+
+    // fetch user rows in one go
+    List<User> users = userRepo.findAllById(counterpartEdgeByUserId.keySet());
+    Map<Long, User> byId = users.stream().collect(Collectors.toMap(User::getId, u -> u));
+
+    // map to DTOs in the original order
+    List<FriendSummaryDto> out = new ArrayList<>(counterpartEdgeByUserId.size());
+    for (Map.Entry<Long, UserConnection> e : counterpartEdgeByUserId.entrySet()) {
+      Long otherId = e.getKey();
+      UserConnection edge = e.getValue();
+      User u = byId.get(otherId);
+      if (u == null) continue; // user deleted?
+      out.add(FriendSummaryDto.builder()
+          .id(u.getId())
+          .email(u.getEmail())
+          .firstname(u.getFirstname())
+          .lastname(u.getLastname())
+          .profileImageUrl(u.getProfileImageUrl())
+          .connectionId(edge.getId())
+          .since(edge.getCreatedAt() == null ? 0L : edge.getCreatedAt().toEpochMilli())
+          .build());
+    }
+    return out;
+  }
 }
