@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.porasl.authservices.auth.ActivateRequest;
 import com.porasl.authservices.auth.AuthenticationRequest;
 import com.porasl.authservices.auth.AuthenticationResponse;
 import com.porasl.authservices.auth.RegisterRequest;
