@@ -13,4 +13,6 @@ Optional<UserConnection> findByUserIdAndTargetUserIdAndStatus(
 
 List<UserConnection> findByUserIdAndStatus(Long userId, UserConnection.Status status);
 List<UserConnection> findByTargetUserIdAndStatus(Long targetUserId, UserConnection.Status status);
+
+Optional<UserConnection> findBetweenUsers(long id, long id2);
 }

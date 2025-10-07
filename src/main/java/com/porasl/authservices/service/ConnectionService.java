@@ -75,4 +75,19 @@ public List<FriendSummaryDto> listAcceptedConnections(long id) {
 	// TODO Auto-generated method stub
 	return null;
 }
+
+public UserConnection requestByEmail(long id, String targetEmail) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+public Object accept(long id, Long connectionId) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+public void delete(long id, Long connectionId) {
+	// TODO Auto-generated method stub
+	
+}
 }

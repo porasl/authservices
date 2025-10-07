@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.porasl.authservices.dto.FriendSummaryDto;
 import com.porasl.authservices.service.ConnectionService;
+import com.porasl.authservices.service.FriendService;
 import com.porasl.authservices.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class MeConnectionsController {
 
 private final ConnectionService connectionService;
+private final FriendService friendService;
 
 @GetMapping("/accepted")
 public List<FriendSummaryDto> listAccepted(@AuthenticationPrincipal User me) {
@@ -32,10 +34,10 @@ public List<FriendSummaryDto> listAccepted(@AuthenticationPrincipal User me) {
 }
 
 // ... your POST (createByEmail) stays as-is ...
-}
 
 
 @GetMapping("/friends")
 public List<FriendSummaryDto> listFriends(@AuthenticationPrincipal User requester) {
     return friendService.listFriends(requester);
+}
 }

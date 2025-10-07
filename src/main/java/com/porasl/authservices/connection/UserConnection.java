@@ -40,4 +40,9 @@ private Instant createdAt;
 private Instant updatedAt;
 
 public enum Status { PENDING, ACCEPTED, BLOCKED }
+
+public void touchCreated() {
+	// TODO Auto-generated method stub
+	
+}
 }
