@@ -8,8 +8,7 @@ import lombok.Data;
 
 @Data
 public class CreateConnectionByEmailReq {
-  @NotBlank @Email
+  @NotBlank
+  @Email
   private String targetEmail;
-
-  private String note; // optional
 }

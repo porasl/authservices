@@ -81,9 +81,18 @@ public UserConnection requestByEmail(long id, String targetEmail) {
 	return null;
 }
 
-public Object accept(long id, Long connectionId) {
-	// TODO Auto-generated method stub
-	return null;
+@Transactional
+public UserConnection accept(Long me, Long connectionId) {   // 👈 return type MUST be UserConnection
+  UserConnection uc = connRepo.findById(connectionId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found"));
+
+  if (!Objects.equals(uc.getTargetUserId(), me)) {
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the target user can accept");
+  }
+
+  uc.setStatus(UserConnection.Status.ACCEPTED);
+  uc.setUpdatedAt(Instant.now());  // or setUpdatedAt(Instant.now()) if you don't have helper
+  return connRepo.save(uc);                                  // 👈 returns UserConnection
 }
 
 public void delete(long id, Long connectionId) {

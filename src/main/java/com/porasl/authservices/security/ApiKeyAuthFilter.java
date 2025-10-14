@@ -1,5 +1,5 @@
 
-package com.porasl.authservices.config;
+package com.porasl.authservices.security;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,5 +52,11 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
     }
 
     chain.doFilter(req, res);
+  }
+  
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    String path = request.getServletPath();
+    return path == null || !path.startsWith("/internal/");
   }
 }
