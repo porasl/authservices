@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,10 +25,10 @@ import lombok.NoArgsConstructor;
 public class Token {
 
   @Id
-  @GeneratedValue
-  private Integer id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-  @Column(unique = true)
+  @Column(name = "token", nullable = false, columnDefinition = "TEXT")
   private String token;
 
   @Enumerated(EnumType.STRING)
@@ -40,6 +41,10 @@ public class Token {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   private User user;
+  
+//Optional: map the hash column (read-only)
+ @Column(name = "token_sha256", insertable = false, updatable = false)
+ private byte[] tokenSha256;
 
   // Manual getters/setters to ensure compilation
   public boolean isExpired() { return expired; }

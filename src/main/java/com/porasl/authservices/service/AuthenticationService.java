@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,23 +27,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-  @Autowired
-  private UserRepository repository;
-  
-  @Autowired
-  private TokenRepository tokenRepository;
-  
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-  
-  @Autowired
-  private JwtService jwtService;
-  
-  @Autowired
-  private AuthenticationManager authenticationManager;
+  private final UserRepository repository;
+  private final TokenRepository tokenRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final JwtService jwtService;
+  private final AuthenticationManager authenticationManager; // currently unused, kept for parity
 
   public AuthenticationResponse register(RegisterRequest request) {
-	
     var user = User.builder()
         .firstname(request.getFirstname())
         .lastname(request.getLastname())
@@ -56,19 +45,23 @@ public class AuthenticationService {
         .blocked(false)
         .activationcode(Long.toHexString(Double.doubleToLongBits(Math.random())))
         .profileImageUrl(request.getProfileImageUrl())
-        .createdDate((new Date()).getTime())
-        .updatedDate((new Date()).getTime())
+        .createdDate(new Date().getTime())
+        .updatedDate(new Date().getTime())
         .build();
-  
+
     Optional<User> savedUser = repository.findByEmailIgnoreCase(user.getEmail());
-   if(!savedUser.isPresent()) {
-    	savedUser = Optional.ofNullable(repository.save(user));
+    if (savedUser.isEmpty()) {
+      savedUser = Optional.of(repository.save(user));
     }
-    var jwtToken = jwtService.generateToken(user);
-    var refreshToken = jwtService.generateRefreshToken(user);
-    saveUserToken(savedUser.get(), jwtToken);
+
+    // ▶ issue richer access token (with claims) + refresh
+    var accessToken  = jwtService.generateAccessToken(savedUser.get());
+    var refreshToken = jwtService.generateRefreshToken(savedUser.get());
+
+    saveUserToken(savedUser.get(), accessToken);
+
     return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+        .accessToken(accessToken)
         .refreshToken(refreshToken)
         .firstname(savedUser.get().getFirstname())
         .lastname(savedUser.get().getLastname())
@@ -77,56 +70,71 @@ public class AuthenticationService {
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-	 Optional<User> user =  repository.findByEmailIgnoreCase(request.getEmail());
-	 User retrievedUser = user.get();
-	 if (!passwordEncoder.matches(request.getPassword(), retrievedUser.getPassword())) {
-				 throw new IllegalStateException("Wrong password");
-	  }
-			 
-	  var jwtToken = jwtService.generateToken(retrievedUser);
-	  var refreshToken = jwtService.generateRefreshToken(retrievedUser);
-	  revokeAllUserTokens(retrievedUser);
-	  saveUserToken(retrievedUser, jwtToken);
-	  return AuthenticationResponse.builder()
-					 .accessToken(jwtToken)
-					 .refreshToken(refreshToken)
-					 .firstname(retrievedUser.getFirstname())
-					 .lastname(retrievedUser.getLastname())
-					 .profileImageUrl(retrievedUser.getProfileImageUrl())
-					 .build();
-  }
-  
-  public AuthenticationResponse authenticateWithToken(
-          HttpServletRequest request, AuthenticationRequest authenticationRequest){
-		    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-		    final String token;
-		    final String userEmail = authenticationRequest.getEmail();
-		    token = authHeader.substring(7);
-	    var userNameInToken = jwtService.extractUsername(token);
-	   
-	    // Get the user based on the user in the token
-	    var jwtToken = "";
-    var refreshToken = "";
-    User retrievedUser = null;
-	   
-	    if(userNameInToken.trim().toUpperCase().equals(userEmail.trim().toUpperCase())) {
-	    	 Optional<User> savedUser = repository.findByEmailIgnoreCase(userEmail);
-         retrievedUser = savedUser.get();
-	    	jwtToken = jwtService.generateToken(retrievedUser);
-	    	refreshToken = jwtService.generateRefreshToken(retrievedUser);
-	    	revokeAllUserTokens(retrievedUser);
-	    	saveUserToken(retrievedUser, jwtToken);
-	    	} else {
-	    		 throw new IllegalStateException("Wrong email address");
-	    	}
-	        return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+    var userOpt = repository.findByEmailIgnoreCase(request.getEmail());
+    var retrievedUser = userOpt.orElseThrow(() -> new IllegalStateException("User not found"));
+
+    if (!passwordEncoder.matches(request.getPassword(), retrievedUser.getPassword())) {
+      throw new IllegalStateException("Wrong password");
+    }
+
+    // ▶ rotate tokens
+    var accessToken  = jwtService.generateAccessToken(retrievedUser);
+    var refreshToken = jwtService.generateRefreshToken(retrievedUser);
+    revokeAllUserTokens(retrievedUser);
+    saveUserToken(retrievedUser, accessToken);
+
+    return AuthenticationResponse.builder()
+        .accessToken(accessToken)
         .refreshToken(refreshToken)
-        .firstname(retrievedUser != null ? retrievedUser.getFirstname() : null)
-        .lastname(retrievedUser != null ? retrievedUser.getLastname() : null)
-        .profileImageUrl(retrievedUser != null ? retrievedUser.getProfileImageUrl() : null)
+        .firstname(retrievedUser.getFirstname())
+        .lastname(retrievedUser.getLastname())
+        .profileImageUrl(retrievedUser.getProfileImageUrl())
         .build();
-	  }
+  }
+
+  /**
+   * Authenticate by presenting a valid (non-expired) Bearer token + the expected email.
+   * If the token subject matches the email, we rotate and return fresh access/refresh.
+   */
+  public AuthenticationResponse authenticateWithToken(
+      HttpServletRequest request,
+      AuthenticationRequest authenticationRequest) {
+
+    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      throw new IllegalStateException("Missing Bearer token");
+    }
+    final String token = authHeader.substring(7);
+    final String emailFromBody = authenticationRequest.getEmail();
+
+    var subject = jwtService.extractUsername(token);
+    if (subject == null || emailFromBody == null ||
+        !subject.trim().equalsIgnoreCase(emailFromBody.trim())) {
+      throw new IllegalStateException("Wrong email address");
+    }
+
+    var user = repository.findByEmailIgnoreCase(subject)
+        .orElseThrow(() -> new IllegalStateException("User not found"));
+
+    // Optional: validate the presented token cryptographically & expiry
+    if (!jwtService.isTokenValid(token, user)) {
+      throw new IllegalStateException("Invalid or expired token");
+    }
+
+    // ▶ rotate and return fresh tokens
+    var accessToken  = jwtService.generateAccessToken(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
+    revokeAllUserTokens(user);
+    saveUserToken(user, accessToken);
+
+    return AuthenticationResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .firstname(user.getFirstname())
+        .lastname(user.getLastname())
+        .profileImageUrl(user.getProfileImageUrl())
+        .build();
+  }
 
   private void saveUserToken(User user, String jwtToken) {
     var token = Token.builder()
@@ -141,51 +149,47 @@ public class AuthenticationService {
 
   private void revokeAllUserTokens(User user) {
     var validUserTokens = tokenRepository.findAllValidTokenByUserId(user.getId());
-    if (validUserTokens.isEmpty())
-      return;
-    validUserTokens.forEach(token -> {
-      token.setExpired(true);
-      token.setRevoked(true);
+    if (validUserTokens.isEmpty()) return;
+    validUserTokens.forEach(t -> {
+      t.setExpired(true);
+      t.setRevoked(true);
     });
     tokenRepository.saveAll(validUserTokens);
   }
 
-  public void refreshToken(
-          HttpServletRequest request,
-          HttpServletResponse response
-  ) throws IOException {
+  public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
     final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    final String refreshToken;
-    final String userEmail;
-    if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       return;
     }
-    refreshToken = authHeader.substring(7);
-    userEmail = jwtService.extractUsername(refreshToken);
+    final String refreshToken = authHeader.substring(7);
+    final String userEmail = jwtService.extractUsername(refreshToken);
+
     if (userEmail != null) {
-      var user = this.repository.findByEmailIgnoreCase(userEmail)
-              .orElseThrow();
+      var user = repository.findByEmailIgnoreCase(userEmail).orElseThrow();
       if (jwtService.isTokenValid(refreshToken, user)) {
-        var accessToken = jwtService.generateToken(user);
+        var accessToken = jwtService.generateAccessToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
+
         var authResponse = AuthenticationResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .firstname(user.getFirstname())
-                .lastname(user.getLastname())
-                .profileImageUrl(user.getProfileImageUrl())
-                .build();
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .firstname(user.getFirstname())
+            .lastname(user.getLastname())
+            .profileImageUrl(user.getProfileImageUrl())
+            .build();
+
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
       }
     }
   }
-  
+
   public String getToken(HttpServletRequest request) {
-	  final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-	  if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
-		  return "";
-	  }
-	  return authHeader.substring(7);
+    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      return "";
+    }
+    return authHeader.substring(7);
   }
 }
