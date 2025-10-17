@@ -23,7 +23,20 @@ public class ConnectionService {
 
   private final UserRepository userRepo;
   private final UserConnectionRepository connRepo;
+  private final UserConnectionRepository repo;
+  
+  public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
+	    List<com.porasl.authservices.user.User> friends =
+	        repo.findAcceptedCounterparties(userId, ConnectionStatus.ACCEPTED);
 
+	    // never return null — always an array (possibly empty)
+	    if (friends == null || friends.isEmpty()) return java.util.Collections.emptyList();
+
+	    return friends.stream()
+	        .map(FriendMapper::toDto)
+	        .toList();
+	  }
+  
   @Transactional
   public ConnectionDto request(Long requesterId, Long targetId) {
     if (Objects.equals(requesterId, targetId)) {
@@ -71,10 +84,10 @@ public class ConnectionService {
     return ConnectionDto.of(saved, /*created=*/true);
   }
 
-public List<FriendSummaryDto> listAcceptedConnections(long id) {
-	// TODO Auto-generated method stub
-	return null;
-}
+  public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
+	    List<FriendSummaryDto> out = repoOrMapper(userId);
+	    return (out != null) ? out : java.util.Collections.emptyList();
+	}
 
 public UserConnection requestByEmail(long id, String targetEmail) {
 	// TODO Auto-generated method stub

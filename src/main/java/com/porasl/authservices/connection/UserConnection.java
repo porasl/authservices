@@ -27,6 +27,9 @@ private Long targetUserId;
 @Column(name = "status", nullable = false, length = 16)
 private Status status;
 
+//@Enumerated(EnumType.STRING)
+//private ConnectionStatus status = ConnectionStatus.PENDING;
+
 @Column(name = "note", length = 255)         // <— NEW (nullable OK)
 private String note;
 
@@ -40,6 +43,14 @@ private Instant createdAt;
 private Instant updatedAt;
 
 public enum Status { PENDING, ACCEPTED, BLOCKED }
+
+@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name="requester_id")
+private com.porasl.authservices.user.User requester;
+
+@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name="target_id")
+private com.porasl.authservices.user.User target;
+
+
 
 public void touchCreated() {
 	// TODO Auto-generated method stub

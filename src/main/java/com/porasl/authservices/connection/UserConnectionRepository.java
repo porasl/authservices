@@ -31,4 +31,20 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
          or (uc.userId = :b and uc.targetUserId = :a)
       """)
   Optional<UserConnection> findBetweenUsers(@Param("a") Long a, @Param("b") Long b);
+  
+  
+  // Return the "other side" user for all ACCEPTED connections involving :userId
+  @Query("""
+    select case
+             when uc.requester.id = :userId then uc.target
+             else uc.requester
+           end
+    from UserConnection uc
+    where (uc.requester.id = :userId or uc.target.id = :userId)
+      and uc.status = :status
+  """)
+  List<com.porasl.authservices.user.User> findAcceptedCounterparties(
+      @Param("userId") Long userId,
+      @Param("status") com.porasl.authservices.connection.ConnectionStatus status);
+
 }
