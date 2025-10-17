@@ -1,7 +1,4 @@
 
-API:
-Swagger: http://localhost:8080/auth/swagger-ui/index.html
-
 Post method  /auth/register  creates an inactive user
 POST: /auth/register
 Payload Body:
@@ -11,7 +8,7 @@ Payload Body:
       
 Response are: 1) JWT token  2) Refresh token
 
-
+----------------------
 
 POST  method /auth/authenticate
 payload: {
@@ -20,7 +17,7 @@ payload: {
     }
  Response are: 1) JWT token  2) Refresh token   
     
-
+-----------------
 POST  method /auth/authenticateWithToken
 payload: {
     "email": ""
@@ -28,7 +25,7 @@ payload: {
 put the JWT token with authorization key in the request header
 Response are: 1) JWT token  2) Refresh token
 
-
+-------------------
 /auth/changePasswordByUser
 PayloadBody:
 {
@@ -63,7 +60,7 @@ No Authorization Token
     "userEmail": ""
 }
  Admin Authorization Token    
- ---------------
+
  
  -----  For RSA Keys (MAC) -------
  mkdir -p ~/.inrik/keys && cd ~/.inrik/keys
