@@ -1,18 +1,20 @@
-package com.porasl.authservices.service; // <- move out of .controller
+package com.porasl.authservices.service;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.porasl.authservices.connection.FriendMapper;
 import com.porasl.authservices.connection.UserConnection;
 import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.dto.ConnectionDto;
 import com.porasl.authservices.dto.FriendSummaryDto;
+import com.porasl.authservices.user.User;
 import com.porasl.authservices.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,34 +25,29 @@ public class ConnectionService {
 
   private final UserRepository userRepo;
   private final UserConnectionRepository connRepo;
-  private final UserConnectionRepository repo;
-  
+
+  /** Return accepted connections as FriendSummaryDto (never null). */
   public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
-	    List<com.porasl.authservices.user.User> friends =
-	        repo.findAcceptedCounterparties(userId, ConnectionStatus.ACCEPTED);
+    List<User> friends = connRepo.findAcceptedCounterparties(userId, UserConnection.Status.ACCEPTED);
+    if (friends == null || friends.isEmpty()) return Collections.emptyList();
+    return friends.stream().map(FriendMapper::toDto).toList();
+  }
 
-	    // never return null — always an array (possibly empty)
-	    if (friends == null || friends.isEmpty()) return java.util.Collections.emptyList();
-
-	    return friends.stream()
-	        .map(FriendMapper::toDto)
-	        .toList();
-	  }
-  
+  /** Create a connection request (or accept if reverse pending exists). */
   @Transactional
   public ConnectionDto request(Long requesterId, Long targetId) {
-    if (Objects.equals(requesterId, targetId)) {
+    if (java.util.Objects.equals(requesterId, targetId)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
     }
 
     userRepo.findById(targetId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "target not found"));
 
-    // already exists?
+    // Already exists in this direction?
     var existing = connRepo.findByUserIdAndTargetUserId(requesterId, targetId);
     if (existing.isPresent()) return ConnectionDto.of(existing.get(), /*created=*/false);
 
-    // reverse pending? → accept both directions
+    // Reverse pending? -> accept both
     var reversePending = connRepo.findByUserIdAndTargetUserIdAndStatus(
         targetId, requesterId, UserConnection.Status.PENDING);
     if (reversePending.isPresent()) {
@@ -71,7 +68,7 @@ public class ConnectionService {
       return ConnectionDto.of(saved, /*created=*/true);
     }
 
-    // create new pending edge
+    // Create new pending edge
     var edge = new UserConnection();
     edge.setUserId(requesterId);
     edge.setTargetUserId(targetId);
@@ -84,32 +81,77 @@ public class ConnectionService {
     return ConnectionDto.of(saved, /*created=*/true);
   }
 
-  public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
-	    List<FriendSummaryDto> out = repoOrMapper(userId);
-	    return (out != null) ? out : java.util.Collections.emptyList();
-	}
+  /** Create/request by target email. Returns the UserConnection entity. */
+  @Transactional
+  public UserConnection requestByEmail(long requesterId, String targetEmail) {
+    if (targetEmail == null || targetEmail.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetEmail is required");
+    }
+    User target = userRepo.findByEmailIgnoreCase(targetEmail.trim())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "target user not found"));
 
-public UserConnection requestByEmail(long id, String targetEmail) {
-	// TODO Auto-generated method stub
-	return null;
-}
+    if (java.util.Objects.equals(requesterId, target.getId())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
+    }
 
-@Transactional
-public UserConnection accept(Long me, Long connectionId) {   // 👈 return type MUST be UserConnection
-  UserConnection uc = connRepo.findById(connectionId)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found"));
+    var existing = connRepo.findByUserIdAndTargetUserId(requesterId, target.getId());
+    if (existing.isPresent()) return existing.get();
 
-  if (!Objects.equals(uc.getTargetUserId(), me)) {
-    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the target user can accept");
+    // Reverse pending? -> accept both
+    var reversePending = connRepo.findByUserIdAndTargetUserIdAndStatus(
+        target.getId(), requesterId, UserConnection.Status.PENDING);
+    if (reversePending.isPresent()) {
+      var a = reversePending.get();
+      a.setStatus(UserConnection.Status.ACCEPTED);
+      a.setUpdatedAt(Instant.now());
+      connRepo.save(a);
+
+      var b = new UserConnection();
+      b.setUserId(requesterId);
+      b.setTargetUserId(target.getId());
+      b.setStatus(UserConnection.Status.ACCEPTED);
+      b.setCreatedBy(requesterId);
+      b.setCreatedAt(Instant.now());
+      b.setUpdatedAt(Instant.now());
+      return connRepo.save(b);
+    }
+
+    // New pending
+    var edge = new UserConnection();
+    edge.setUserId(requesterId);
+    edge.setTargetUserId(target.getId());
+    edge.setStatus(UserConnection.Status.PENDING);
+    edge.setCreatedBy(requesterId);
+    edge.setCreatedAt(Instant.now());
+    edge.setUpdatedAt(Instant.now());
+    return connRepo.save(edge);
   }
 
-  uc.setStatus(UserConnection.Status.ACCEPTED);
-  uc.setUpdatedAt(Instant.now());  // or setUpdatedAt(Instant.now()) if you don't have helper
-  return connRepo.save(uc);                                  // 👈 returns UserConnection
-}
+  /** Accept a pending request where 'me' is the target. */
+  @Transactional
+  public UserConnection accept(Long me, Long connectionId) {
+    UserConnection uc = connRepo.findById(connectionId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found"));
 
-public void delete(long id, Long connectionId) {
-	// TODO Auto-generated method stub
-	
-}
+    if (!java.util.Objects.equals(uc.getTargetUserId(), me)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the target user can accept");
+    }
+
+    uc.setStatus(UserConnection.Status.ACCEPTED);
+    uc.setUpdatedAt(Instant.now());
+    return connRepo.save(uc);
+  }
+
+  /** Delete/cancel/decline a connection the current user is part of. */
+  @Transactional
+  public void delete(long me, Long connectionId) {
+    UserConnection uc = connRepo.findById(connectionId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found"));
+
+    // allow delete if requester or target is 'me'
+    if (!java.util.Objects.equals(uc.getUserId(), me) && !java.util.Objects.equals(uc.getTargetUserId(), me)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to delete this connection");
+    }
+    connRepo.delete(uc);
+  }
 }
