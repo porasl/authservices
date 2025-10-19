@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.porasl.authservices.connection.UserConnection.Status;
 import com.porasl.authservices.connection.model.ConnectionStatus;
 
 public interface UserConnectionRepository extends JpaRepository<UserConnection, Long> {
@@ -47,6 +48,6 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
   """)
   List<com.porasl.authservices.user.User> findAcceptedCounterparties(
       @Param("userId") Long userId,
-      @Param("status") ConnectionStatus status);
+      @Param("status") Status accepted);
 
 }

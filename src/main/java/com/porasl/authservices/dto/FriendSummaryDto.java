@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder  // 👈 This enables FriendSummaryDto.builder()
+@Builder  
 public class FriendSummaryDto {
     private Long id;
     private String email;

@@ -1,29 +1,40 @@
 package com.porasl.authservices.service;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import com.porasl.authservices.user.User;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtParserBuilder;
+import io.jsonwebtoken.Jwts;          // new constants live here
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Unified JWT service:
@@ -71,7 +82,7 @@ public class JwtService {
   private String publicKeyLocation;
 
   /* ---------- Resolved runtime state ---------- */
-  private Key hmacKey;                 // HS256
+  private SecretKey hmacKey;   // NEW (HMAC key must be SecretKey)
   private PrivateKey rsaPrivateKey;    // RS256
   private PublicKey rsaPublicKey;      // RS256
   private List<String> audiences = List.of();
@@ -162,14 +173,14 @@ public class JwtService {
         .setExpiration(exp);
 
     if (hsMode) {
-      return builder
-          .signWith(hmacKey, SignatureAlgorithm.HS256)
-          .compact();
-    } else {
-      return builder
-          .signWith(rsaPrivateKey, SignatureAlgorithm.RS256)
-          .compact();
-    }
+    	  return builder
+    	      .signWith(hmacKey, Jwts.SIG.HS256)   // <— NEW
+    	      .compact();
+    	} else {
+    	  return builder
+    	      .signWith(rsaPrivateKey, Jwts.SIG.RS256)  // <— NEW
+    	      .compact();
+    	}
   }
 
   private boolean validateIssuerAudience(String token) {
@@ -211,17 +222,20 @@ public class JwtService {
   }
 
   private Claims extractAllClaims(String token) {
-    JwtParserBuilder parser = Jwts.parserBuilder()
-        .setAllowedClockSkewSeconds(clockSkewSeconds);
+	  JwtParserBuilder parser = Jwts.parser()
+			  .clockSkewSeconds(clockSkewSeconds);	  
+	     // .clockSkew(Duration.ofSeconds(clockSkewSeconds));
 
-    if (hsMode) {
-      parser = parser.setSigningKey(hmacKey);
-    } else {
-      parser = parser.setSigningKey(rsaPublicKey);
-    }
+	  if (hsMode) {
+	    parser = parser.verifyWith(hmacKey);         // SecretKey
+	  } else {
+	    parser = parser.verifyWith(rsaPublicKey);    // PublicKey
+	  }
 
-    return parser.build().parseClaimsJws(token).getBody();
-  }
+	  return parser.build().parseSignedClaims(token).getPayload();
+	}
+
+
 
   private long resolveExpiryMillis(boolean refresh) {
     // 1) Legacy HS256 durations (ms) if configured
