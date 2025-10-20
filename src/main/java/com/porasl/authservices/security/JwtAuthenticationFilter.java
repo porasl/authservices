@@ -2,7 +2,6 @@ package com.porasl.authservices.security;
 
 import java.io.IOException;
 
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,33 +26,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
   private final TokenRepository tokenRepository; // remove if you don't use DB-backed tokens
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthHeaderLogger.class);
+
 
   @Override
-  protected void doFilterInternal(
-      @NonNull HttpServletRequest request,
-      @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+      throws ServletException, IOException {
 
     final String path = request.getServletPath();
+    // TEMP log:
+    log.debug("JwtFilter path={} authHeader={}", path, request.getHeader("Authorization"));
 
-    // ✅ Only the exact public auth endpoints (and swagger) are skipped
     if ("/auth/authenticate".equals(path)
         || "/auth/authenticateWithToken".equals(path)
         || path.startsWith("/swagger-ui")
         || path.startsWith("/v3/api-docs")) {
-      filterChain.doFilter(request, response);
+      chain.doFilter(request, response);
       return;
     }
-  
 
     final String authHeader = request.getHeader("Authorization");
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      filterChain.doFilter(request, response); // no token -> remain unauthenticated
+      chain.doFilter(request, response);
       return;
     }
 
     final String jwt = authHeader.substring(7);
-    final String userEmail = jwtService.extractUsername(jwt); // typically the 'sub' claim
+    final String userEmail = jwtService.extractUsername(jwt);
+
+    if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+      boolean isTokenRecordValid = tokenRepository.findByToken(jwt)
+          .map(t -> !t.isExpired() && !t.isRevoked())
+          .orElse(true);
+
+      if (jwtService.isTokenValid(jwt, userDetails) && isTokenRecordValid) {
+        var authToken = new UsernamePasswordAuthenticationToken(
+            userDetails, null, userDetails.getAuthorities());
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
+    } 
 
     if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
@@ -70,7 +83,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
     }
-
-    filterChain.doFilter(request, response);
+    
+    chain.doFilter(request, response);
   }
+  
 }

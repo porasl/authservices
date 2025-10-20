@@ -26,6 +26,9 @@ public class ConnectionService {
   private final UserRepository userRepo;
   private final UserConnectionRepository connRepo;
 
+//com.porasl.authservices.service.ConnectionService
+
+
   /** Return accepted connections as FriendSummaryDto (never null). */
   public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
     List<User> friends = connRepo.findAcceptedCounterparties(userId, UserConnection.Status.ACCEPTED);
@@ -36,7 +39,7 @@ public class ConnectionService {
   /** Create a connection request (or accept if reverse pending exists). */
   @Transactional
   public ConnectionDto request(Long requesterId, Long targetId) {
-    if (java.util.Objects.equals(requesterId, targetId)) {
+    if (requesterId.equals(targetId)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
     }
 
@@ -90,7 +93,7 @@ public class ConnectionService {
     User target = userRepo.findByEmailIgnoreCase(targetEmail.trim())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "target user not found"));
 
-    if (java.util.Objects.equals(requesterId, target.getId())) {
+    if (requesterId ==target.getId()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
     }
 
@@ -133,7 +136,7 @@ public class ConnectionService {
     UserConnection uc = connRepo.findById(connectionId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found"));
 
-    if (!java.util.Objects.equals(uc.getTargetUserId(), me)) {
+    if (!uc.getTargetUserId().equals(me)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the target user can accept");
     }
 
@@ -149,7 +152,8 @@ public class ConnectionService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found"));
 
     // allow delete if requester or target is 'me'
-    if (!java.util.Objects.equals(uc.getUserId(), me) && !java.util.Objects.equals(uc.getTargetUserId(), me)) {
+    if ((!uc.getUserId().equals(me)) && 
+    		(!uc.getTargetUserId().equals(me))) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to delete this connection");
     }
     connRepo.delete(uc);

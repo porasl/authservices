@@ -8,6 +8,7 @@ import static org.springframework.http.HttpMethod.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,9 +52,14 @@ public class SecurityConfiguration {
 
         // Swagger & static docs (keep if you use them)
         .requestMatchers(
-            "/api-docs", "/api-docs/**",
-            "/swagger-resources", "/swagger-resources/**",
-            "/configuration/ui", "/configuration/security",
+        		"/auth/authenticate",
+            "/auth/authenticateWithToken",
+            "/api-docs", 
+            "/api-docs/**",
+            "/swagger-resources", 
+            "/swagger-resources/**",
+            "/configuration/ui", 
+            "/configuration/security",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-ui.html",
@@ -61,7 +67,7 @@ public class SecurityConfiguration {
             "/auth/index.html",
             "/webjars/**"
         ).permitAll()
-
+        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
         // public profile image fetches (HEAD/GET only)
         .requestMatchers(HEAD, "/api/profile/image/**").permitAll()
         .requestMatchers(GET,  "/api/profile/image/**").permitAll()

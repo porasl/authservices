@@ -6,12 +6,14 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.porasl.authservices.token.Token;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -24,11 +26,13 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "tokens")
 @Getter
 @Setter
 @Entity
@@ -62,8 +66,6 @@ public class User implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@OneToMany(mappedBy = "user")
-	private List<Token> tokens;
 	
 	private String profileImageUrl;
 
@@ -72,6 +74,10 @@ public class User implements UserDetails {
 		return role.getAuthorities();
 	}
 
+	@JsonIgnore
+	  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	  private List<Token> tokens;
+	
 	@Override
 	public String getPassword() {
 		return password;

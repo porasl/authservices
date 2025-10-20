@@ -22,6 +22,21 @@ public class UserService {
 	
 	@Autowired
     private  UserRepository repository;
+	
+	 /** Case-insensitive email lookup. */
+    public Optional<User> findByEmail(String email) {
+        if (email == null || email.isBlank()) return Optional.empty();
+        return repository.findByEmailIgnoreCase(email.trim());
+    }
+
+    /** Case-insensitive username lookup (requires repo support). */
+    public Optional<User> findByUsername(String username) {
+        if (username == null || username.isBlank()) return Optional.empty();
+        // If you don't have this repository method yet, add it:
+        // Optional<User> findByUsernameIgnoreCase(String username);
+        return repository.findByEmailIgnoreCase(username.trim());
+    }
+
     
     public void changePasswordByUser(ChangePasswordRequest request) {
     	//Get the user by email

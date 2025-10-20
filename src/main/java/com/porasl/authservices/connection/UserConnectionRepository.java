@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.porasl.authservices.connection.UserConnection.Status;
 import com.porasl.authservices.connection.model.ConnectionStatus;
+import com.porasl.authservices.user.User;
 
 public interface UserConnectionRepository extends JpaRepository<UserConnection, Long> {
 
@@ -22,6 +23,9 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
   // Replacement for "findBetweenUsers" when checking one direction
   Optional<UserConnection> findByUserIdAndTargetUserId(Long userId, Long targetUserId);
   Optional<UserConnection> findByTargetUserIdAndUserId(Long targetUserId, Long userId);
+  
+ 
+
 
   // (Optional) faster existence checks
   boolean existsByUserIdAndTargetUserId(Long userId, Long targetUserId);
@@ -49,5 +53,17 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
   List<com.porasl.authservices.user.User> findAcceptedCounterparties(
       @Param("userId") Long userId,
       @Param("status") Status accepted);
+  
+  
+  @Query("""
+	         select u
+	         from User u
+	         join UserConnection c
+	           on (c.userId = :userId and c.targetUserId = u.id)
+	           or (c.targetUserId = :userId and c.userId = u.id)
+	         where c.status = :status
+	         """)
+	  List<User> findCounterpartiesByStatus(@Param("userId") Long userId,
+	                                        @Param("status") ConnectionStatus status);
 
 }

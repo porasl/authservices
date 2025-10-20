@@ -80,4 +80,21 @@ chmod 600 jwt.key jwt-private.pem jwt-public.pem
 # (Optional) Remove the original PKCS#1 key to reduce clutter
 rm jwt.key
  
+ --- Kill Java processes
+ sudo lsof -iTCP:8081 -sTCP:LISTEN -n -P
+ pgrep -lf java 
+ jps -lv 
+kill <PID>
+kill -9 <PID> 
+pkill -f 'java.*YourMainClass'
+# or
+killall java
+lsof -tiTCP:8081 -sTCP:LISTEN
+
+kill $(lsof -tiTCP:8081 -sTCP:LISTEN)
+
+
+kill -9 $(lsof -tiTCP:8081 -sTCP:LISTEN)
+
+ 
  -----------
