@@ -53,4 +53,25 @@ public class UserController {
         public String getLastname() { return lastname; }
         public String getProfileImageUrl() { return profileImageUrl; }
     }
+    
+    @DeleteMapping("/{id}")
+    // optional: make it explicit
+    @PreAuthorize("hasAuthority('SVC')")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+      if (!userRepository.existsById(id)) return ResponseEntity.notFound().build();
+      userRepository.deleteById(id);
+      return ResponseEntity.noContent().build();
+    }
+    
+    @DeleteMapping("/by-email/{email}")
+    @PreAuthorize("hasAuthority('SVC')")
+    public ResponseEntity<Void> deleteByEmail(@PathVariable String email) {
+      if (!userRepository.existsByEmailIgnoreCase(email)) {
+        return ResponseEntity.notFound().build();
+      }
+      userRepository.deleteByEmailIgnoreCase(email);
+      return ResponseEntity.noContent().build(); // 204
+    }
+    
+    
 }

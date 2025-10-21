@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.porasl.authservices.connection.UserConnection.Status;
 import com.porasl.authservices.connection.model.ConnectionStatus;
@@ -25,7 +26,10 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
   Optional<UserConnection> findByTargetUserIdAndUserId(Long targetUserId, Long userId);
   
  
+  @Transactional
+  void deleteByRequesterIdOrTargetId(Long requesterId, Long targetId);
 
+  List<UserConnection> findByRequesterIdOrTargetId(Long requesterId, Long targetId);
 
   // (Optional) faster existence checks
   boolean existsByUserIdAndTargetUserId(Long userId, Long targetUserId);
