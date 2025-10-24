@@ -71,12 +71,14 @@ public class SecurityConfiguration {
         // public profile image fetches (HEAD/GET only)
         .requestMatchers(HEAD, "/api/profile/image/**").permitAll()
         .requestMatchers(GET,  "/api/profile/image/**").permitAll()
+        .requestMatchers(POST, "/auth/register").permitAll()
 
         // Internal service endpoints (API key filter will run here)
         .requestMatchers("/internal/users/**").hasAuthority("SVC")
 
         // Management RBAC
         .requestMatchers("/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
+        .requestMatchers("/admin/**").hasRole(ADMIN.name())
         .requestMatchers(GET,    "/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
         .requestMatchers(POST,   "/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
         .requestMatchers(PUT,    "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())

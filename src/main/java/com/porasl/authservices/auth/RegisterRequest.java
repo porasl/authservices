@@ -20,6 +20,7 @@ public class RegisterRequest {
   private String password;
   private Role role;
   private String profileImageUrl;
+  private String confirmPassword;
 
   // Manual getters to ensure compilation
   public String getFirstname() { return firstname; }

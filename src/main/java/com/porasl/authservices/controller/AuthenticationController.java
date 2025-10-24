@@ -44,8 +44,7 @@ public class AuthenticationController {
     this.jwtService = jwtService;
   }
 
-  @Operation(summary = "Register a new user")
-  @PostMapping("/register")
+  @PostMapping(value = "/api/register", consumes = "application/json")
   public ResponseEntity<AuthenticationResponse> register(
       @Parameter(description = "Register request body")
       @RequestBody RegisterRequest request

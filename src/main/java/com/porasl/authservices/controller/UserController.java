@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/internal/users")
+@PreAuthorize("hasAuthority('SVC')")
 public class UserController {
     
     private final UserRepository userRepository;
@@ -15,7 +16,8 @@ public class UserController {
         this.userRepository = userRepository;
     }
     
-    @GetMapping("/{email}")
+    
+    @GetMapping("/{email:.+}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileResponse> getUserByEmail(@PathVariable String email) {
         return userRepository.findByEmailIgnoreCase(email)
@@ -63,7 +65,7 @@ public class UserController {
       return ResponseEntity.noContent().build();
     }
     
-    @DeleteMapping("/by-email/{email}")
+    @DeleteMapping("/by-email/{email:.+}")
     @PreAuthorize("hasAuthority('SVC')")
     public ResponseEntity<Void> deleteByEmail(@PathVariable String email) {
       if (!userRepository.existsByEmailIgnoreCase(email)) {

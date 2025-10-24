@@ -2,13 +2,17 @@ package com.porasl.authservices.user;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.porasl.authservices.connection.UserConnection;
 import com.porasl.authservices.token.Token;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -280,4 +284,23 @@ public class User implements UserDetails {
 			return user;
 		}
 	}
+	
+	@OneToMany(mappedBy = "requester", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<UserConnection> sentConnections;
+
+	@OneToMany(mappedBy = "target", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<UserConnection> receivedConnections;
+	
+	@Transient
+	public List<User> getFriends() {
+	    return Stream.concat(
+	            sentConnections.stream()
+	                .filter(c -> c.getStatus() == UserConnection.Status.ACCEPTED)
+	                .map(UserConnection::getTarget),
+	            receivedConnections.stream()
+	                .filter(c -> c.getStatus() == UserConnection.Status.ACCEPTED)
+	                .map(UserConnection::getRequester)
+	    ).toList();
+	}
+
 }

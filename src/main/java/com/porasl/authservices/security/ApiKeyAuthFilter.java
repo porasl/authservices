@@ -46,7 +46,7 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
           new UsernamePasswordAuthenticationToken(
               "internal-client",
               null,
-              List.of(new SimpleGrantedAuthority("SVC")) // <— matches hasAuthority("SVC")
+              List.of(new SimpleGrantedAuthority("SVC")) 
           );
       SecurityContextHolder.getContext().setAuthentication(auth);
     }
