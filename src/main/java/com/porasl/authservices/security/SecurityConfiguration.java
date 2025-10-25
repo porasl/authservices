@@ -45,7 +45,9 @@ public class SecurityConfiguration {
       .authorizeHttpRequests(req -> req
         // allow preflight (harmless for Postman, required for browsers)
         .requestMatchers(OPTIONS, "/**").permitAll()
-
+        // INTERNAL service calls (must have API key = mapped to SVC authority)
+        .requestMatchers("/internal/auth/**").hasAuthority("SVC")
+        .requestMatchers("/internal/users/**").hasAuthority("SVC")
         // 👇 only the auth endpoints are public
         .requestMatchers(POST, "/auth/authenticate").permitAll()
         .requestMatchers(POST, "/auth/authenticateWithToken").permitAll()
@@ -54,6 +56,8 @@ public class SecurityConfiguration {
         .requestMatchers(
         		"/auth/authenticate",
             "/auth/authenticateWithToken",
+            "/auth/register",
+            "/auth/login",
             "/api-docs", 
             "/api-docs/**",
             "/swagger-resources", 
@@ -72,6 +76,9 @@ public class SecurityConfiguration {
         .requestMatchers(HEAD, "/api/profile/image/**").permitAll()
         .requestMatchers(GET,  "/api/profile/image/**").permitAll()
         .requestMatchers(POST, "/auth/register").permitAll()
+        .requestMatchers(POST, "/auth/authenticate").permitAll()
+        .requestMatchers(POST, "/auth/authenticateWithToken").permitAll()
+        .requestMatchers(POST, "/auth/api/register").permitAll()
 
         // Internal service endpoints (API key filter will run here)
         .requestMatchers("/internal/users/**").hasAuthority("SVC")
@@ -84,8 +91,6 @@ public class SecurityConfiguration {
         .requestMatchers(PUT,    "/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
         .requestMatchers(DELETE, "/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
 
-        // 🚫 IMPORTANT: remove any broad "/auth/**.permitAll()" — it would expose /auth/api/**
-        // Everything else must be authenticated (this includes /auth/api/me/connections/**)
         .anyRequest().authenticated()
       )
       .authenticationProvider(authenticationProvider)
