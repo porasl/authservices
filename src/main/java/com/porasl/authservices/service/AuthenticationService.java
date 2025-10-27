@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +28,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-  private final UserRepository repository;
-  private final TokenRepository tokenRepository;
-  private final PasswordEncoder passwordEncoder;
-  private final JwtService jwtService;
-  private final AuthenticationManager authenticationManager; // currently unused, kept for parity
+  @Autowired
+  UserRepository repository;
+  @Autowired
+  TokenRepository tokenRepository;
+  @Autowired
+  PasswordEncoder passwordEncoder;
+  @Autowired
+ JwtService jwtService;
+  @Autowired
+  AuthenticationManager authenticationManager; 
 
   public AuthenticationResponse register(RegisterRequest request) {
     var user = User.builder()

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +22,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+
 public class ConnectionService {
 
-  private final UserRepository userRepo;
-  private final UserConnectionRepository connRepo;
+@Autowired
+   UserRepository userRepo;
+@Autowired
+ UserConnectionRepository connRepo;
 
 //com.porasl.authservices.service.ConnectionService
 
