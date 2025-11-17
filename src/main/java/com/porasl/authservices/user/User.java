@@ -79,7 +79,7 @@ public class User implements UserDetails {
 	}
 
 	@JsonIgnore
-	  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	  private List<Token> tokens;
 	
 	@Override

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.porasl.authservices.auth.ActivateRequest;
 import com.porasl.authservices.connection.UserConnectionRepository;
+import com.porasl.authservices.token.TokenRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 	public class UserService {
 
 	    private final UserRepository userRepository;
+	    private final TokenRepository tokenRepository;
 	    private final UserConnectionRepository connectionRepository;
 	    private final PasswordEncoder passwordEncoder; 
 
@@ -126,6 +128,7 @@ import lombok.extern.slf4j.Slf4j;
     
     public void deleteUser(DeleteUserRequest request, Principal connectedUser) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        tokenRepository.findAllValidTokenByUserId(user.getId());
         userRepository.delete(user);
     }
 }
