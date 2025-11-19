@@ -1,5 +1,6 @@
 package com.porasl.authservices.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -26,5 +27,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
       WHERE u.id = :userId
       """)
     Optional<User> findByIdWithFriends(@Param("userId") Long userId);
+    
+    //@EntityGraph(attributePaths = {"sentConnections", "receivedConnections"})
+   // @Query("SELECT u FROM User u")
+    //List<User> getAllUsers();
+    
+    
 
 }
