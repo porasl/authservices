@@ -2,6 +2,8 @@ package com.porasl.authservices.connection;
 
 import java.time.Instant;
 
+import com.porasl.authservices.user.User;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -60,13 +62,13 @@ public class UserConnection {
 
     public enum Status { PENDING, ACCEPTED, BLOCKED }
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "requester_id")
-    private com.porasl.authservices.user.User requester;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    private User requester;
+    
+    @ManyToOne
     @JoinColumn(name = "target_id")
-    private com.porasl.authservices.user.User target;
+    private User target;
 
     @PrePersist
     protected void onCreate() {
