@@ -14,11 +14,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailIgnoreCase(String email);
     void deleteByEmailIgnoreCase(String email);
 
-    // Option 1: EntityGraph-based eager load of both connection lists
+    // NEW — required for your controller
+    List<User> findAllByEmailInIgnoreCase(List<String> emails);
+
+    // Load both lists for a single user
     @EntityGraph(attributePaths = {"sentConnections", "receivedConnections"})
     Optional<User> findById(Long id);
 
-    // Option 2 (optional): keep JPQL version for explicit fetching
     @Query("""
       SELECT DISTINCT u 
       FROM User u
@@ -27,11 +29,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
       WHERE u.id = :userId
       """)
     Optional<User> findByIdWithFriends(@Param("userId") Long userId);
-    
-    //@EntityGraph(attributePaths = {"sentConnections", "receivedConnections"})
-   // @Query("SELECT u FROM User u")
-    //List<User> getAllUsers();
-    
-    
-
 }

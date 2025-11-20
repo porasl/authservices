@@ -36,7 +36,7 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "tokens")
+//@ToString(exclude = "tokens")
 @Getter
 @Setter
 @Entity
@@ -301,6 +301,15 @@ public class User implements UserDetails {
 	                .filter(c -> c.getStatus() == UserConnection.Status.ACCEPTED)
 	                .map(UserConnection::getRequester)
 	    ).toList();
+	}
+	
+	@Override
+	public String toString() {
+	    return "User{id=" + id + 
+	           ", email='" + email + '\'' + 
+	           ", firstname='" + firstname + '\'' + 
+	           ", lastname='" + lastname + '\'' +
+	           '}';
 	}
 
 }

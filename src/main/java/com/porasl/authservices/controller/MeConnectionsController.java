@@ -26,7 +26,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/auth/api/me")
+@RequestMapping("/auth/me")
 @RequiredArgsConstructor
 public class MeConnectionsController {
 
