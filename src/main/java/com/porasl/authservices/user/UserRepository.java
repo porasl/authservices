@@ -29,4 +29,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
       WHERE u.id = :userId
       """)
     Optional<User> findByIdWithFriends(@Param("userId") Long userId);
+
+    Optional<User> findByEmailIgnoreCaseAndIsPlaceholderTrue(String email);
+
+    Optional<User> findByEmailIgnoreCaseAndIsPlaceholderFalse(String email);
+
 }
