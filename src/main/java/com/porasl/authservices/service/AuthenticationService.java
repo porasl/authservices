@@ -6,9 +6,11 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.porasl.authservices.auth.AuthenticationRequest;
@@ -29,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationService {
 
   @Autowired
-  UserRepository repository;
+  UserRepository userRepository;
   @Autowired
   TokenRepository tokenRepository;
   @Autowired
@@ -40,9 +42,23 @@ public class AuthenticationService {
   AuthenticationManager authenticationManager; 
 
   public AuthenticationResponse register(RegisterRequest request) {
-    var user = User.builder()
+	  String email = request.getEmail().trim().toLowerCase();
+
+	    // 1) See if there is a placeholder user for this email
+	    User user = userRepository.findByEmailIgnoreCaseAndIsPlaceholderTrue(email)
+	            .orElse(null);
+	  
+	    if (user != null) {
+	        // ✅ "Upgrade" placeholder -> real user
+	        user.setFirstname(request.getFirstname());
+	        user.setLastname(request.getLastname());
+	        user.setPassword(passwordEncoder.encode(request.getPassword()));
+	        user.setIsPlaceholder(false);
+	        user.setEnabled(true);  // or whatever your flow is
+	    }else {
+        user = User.builder()
         .firstname(request.getFirstname())
-        .lastname(request.getLastname())
+        .lastname(request.getLastname()) 
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
         .role(request.getRole())
@@ -54,10 +70,10 @@ public class AuthenticationService {
         .createdDate(new Date().getTime())
         .updatedDate(new Date().getTime())
         .build();
-
-    Optional<User> savedUser = repository.findByEmailIgnoreCase(user.getEmail());
+	    }
+    Optional<User> savedUser = userRepository.findByEmailIgnoreCase(user.getEmail());
     if (savedUser.isEmpty()) {
-      savedUser = Optional.of(repository.save(user));
+      savedUser = Optional.of(userRepository.save(user));
     }
 
     // ▶ issue richer access token (with claims) + refresh
@@ -76,7 +92,7 @@ public class AuthenticationService {
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-    var userOpt = repository.findByEmailIgnoreCase(request.getEmail());
+    var userOpt = userRepository.findByEmailIgnoreCase(request.getEmail());
     var retrievedUser = userOpt.orElseThrow(() -> new IllegalStateException("User not found"));
 
     if (!passwordEncoder.matches(request.getPassword(), retrievedUser.getPassword())) {
@@ -119,7 +135,7 @@ public class AuthenticationService {
       throw new IllegalStateException("Wrong email address");
     }
 
-    var user = repository.findByEmailIgnoreCase(subject)
+    var user = userRepository.findByEmailIgnoreCase(subject)
         .orElseThrow(() -> new IllegalStateException("User not found"));
 
     // Optional: validate the presented token cryptographically & expiry
@@ -172,7 +188,7 @@ public class AuthenticationService {
     final String userEmail = jwtService.extractUsername(refreshToken);
 
     if (userEmail != null) {
-      var user = repository.findByEmailIgnoreCase(userEmail).orElseThrow();
+      var user = userRepository.findByEmailIgnoreCase(userEmail).orElseThrow();
       if (jwtService.isTokenValid(refreshToken, user)) {
         var accessToken = jwtService.generateAccessToken(user);
         revokeAllUserTokens(user);

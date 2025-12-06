@@ -17,8 +17,8 @@ public class ConnectionDto {
   public static ConnectionDto of(UserConnection uc, boolean created) {
     return ConnectionDto.builder()
         .id(uc.getId())
-        .requesterId(uc.getUserId())
-        .targetId(uc.getTargetUserId())
+        .requesterId(uc.getRequester().getId())
+        .targetId(uc.getTarget().getId())
         .status(uc.getStatus().name())
         .note(uc.getNote())
         .createdAt(uc.getCreatedAt() == null ? 0 : uc.getCreatedAt().toEpochMilli())

@@ -9,65 +9,92 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.porasl.authservices.connection.UserConnection.Status;
-import com.porasl.authservices.connection.model.ConnectionStatus;
 import com.porasl.authservices.user.User;
 
 public interface UserConnectionRepository extends JpaRepository<UserConnection, Long> {
 
-  Optional<UserConnection> findByUserIdAndTargetUserIdAndStatus(
-      Long userId, Long targetUserId, UserConnection.Status status);
+    // ==========================================================
+    // BASIC LOOKUPS (new JPA relationship names)
+    // ==========================================================
 
-  List<UserConnection> findByUserIdAndStatus(Long userId, UserConnection.Status status);
+    Optional<UserConnection> findByRequesterIdAndTargetId(Long requesterId, Long targetId);
 
-  List<UserConnection> findByTargetUserIdAndStatus(Long targetUserId, UserConnection.Status status);
+    Optional<UserConnection> findByRequesterIdAndTargetIdAndStatus(
+            Long requesterId, Long targetId, Status status);
 
-  // Replacement for "findBetweenUsers" when checking one direction
-  Optional<UserConnection> findByUserIdAndTargetUserId(Long userId, Long targetUserId);
-  Optional<UserConnection> findByTargetUserIdAndUserId(Long targetUserId, Long userId);
-  
- 
-  @Transactional
-  void deleteByRequesterIdOrTargetId(Long requesterId, Long targetId);
+    List<UserConnection> findByRequesterIdAndStatus(Long requesterId, Status status);
 
-  List<UserConnection> findByRequesterIdOrTargetId(Long requesterId, Long targetId);
+    List<UserConnection> findByTargetIdAndStatus(Long targetId, Status status);
 
-  // (Optional) faster existence checks
-  boolean existsByUserIdAndTargetUserId(Long userId, Long targetUserId);
-  boolean existsByTargetUserIdAndUserId(Long targetUserId, Long userId);
+    // Checks in reverse direction
+    Optional<UserConnection> findByTargetIdAndRequesterId(Long targetId, Long requesterId);
 
-  // ✅ Single JPQL method to match either direction (A→B or B→A)
-  @Query("""
-      select uc from UserConnection uc
-      where (uc.userId = :a and uc.targetUserId = :b)
-         or (uc.userId = :b and uc.targetUserId = :a)
-      """)
-  Optional<UserConnection> findBetweenUsers(@Param("a") Long a, @Param("b") Long b);
-  
-  
-  // Return the "other side" user for all ACCEPTED connections involving :userId
-  @Query("""
-    select case
-             when uc.requester.id = :userId then uc.target
-             else uc.requester
-           end
-    from UserConnection uc
-    where (uc.requester.id = :userId or uc.target.id = :userId)
-      and uc.status = :status
-  """)
-  List<com.porasl.authservices.user.User> findAcceptedCounterparties(
-      @Param("userId") Long userId,
-      @Param("status") Status accepted);
-  
-  
-  @Query("""
-	         select u
-	         from User u
-	         join UserConnection c
-	           on (c.userId = :userId and c.targetUserId = u.id)
-	           or (c.targetUserId = :userId and c.userId = u.id)
-	         where c.status = :status
-	         """)
-	  List<User> findCounterpartiesByStatus(@Param("userId") Long userId,
-	                                        @Param("status") ConnectionStatus status);
+    boolean existsByRequesterIdAndTargetId(Long requesterId, Long targetId);
 
+    boolean existsByTargetIdAndRequesterId(Long targetId, Long requesterId);
+
+
+    // ==========================================================
+    // MATCH CONNECTION BETWEEN TWO USERS (bidirectional)
+    // ==========================================================
+
+    @Query("""
+        select uc
+        from UserConnection uc
+        where (uc.requester.id = :a and uc.target.id = :b)
+           or (uc.requester.id = :b and uc.target.id = :a)
+        """)
+    Optional<UserConnection> findBetweenUsers(
+            @Param("a") Long a,
+            @Param("b") Long b);
+
+
+    // ==========================================================
+    // GET ACCEPTED FRIENDS (returns the opposite user)
+    // ==========================================================
+
+
+    // ==========================================================
+    // DELETE / FIND all connections where user is requester or target
+    // ==========================================================
+
+    @Transactional
+    void deleteByRequesterIdOrTargetId(Long requesterId, Long targetId);
+
+    List<UserConnection> findByRequesterIdOrTargetId(Long requesterId, Long targetId);
+    @Query("""
+    	    select uc.target
+    	    from UserConnection uc
+    	    where uc.requester.id = :userId
+    	      and uc.status = :status
+    	""")
+    	List<User> findAcceptedTargets(@Param("userId") Long userId,
+    	                               @Param("status") Status status);
+
+    	@Query("""
+    	    select uc.requester
+    	    from UserConnection uc
+    	    where uc.target.id = :userId
+    	      and uc.status = :status
+    	""")
+    	List<User> findAcceptedRequesters(@Param("userId") Long userId,
+    	                                  @Param("status") Status status);
+
+
+    // ==========================================================
+    // FIND USERS WITH ANY STATUS (generic)
+    // ==========================================================
+
+    @Query("""
+        select case
+                 when c.requester.id = :userId then c.target
+                 else c.requester
+               end
+        from UserConnection c
+        where (c.requester.id = :userId or c.target.id = :userId)
+          and c.status = :status
+        """)
+    List<User> findCounterpartiesByStatus(
+            @Param("userId") Long userId,
+            @Param("status") Status status);
 }

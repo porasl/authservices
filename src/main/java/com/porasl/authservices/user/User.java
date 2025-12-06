@@ -1,7 +1,9 @@
 package com.porasl.authservices.user;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.data.annotation.Transient;
@@ -70,6 +72,8 @@ public class User implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
+	@Column(name = "is_placeholder", nullable = false)
+	private boolean isPlaceholder;
 	
 	private String profileImageUrl;
 
@@ -192,6 +196,7 @@ public class User implements UserDetails {
 	public static UserBuilder builder() {
 		return new UserBuilder();
 	}
+	
 
 	public static class UserBuilder {
 		private String firstname;
@@ -285,12 +290,12 @@ public class User implements UserDetails {
 		}
 	}
 	
-	@OneToMany(mappedBy = "requester", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
 	private List<UserConnection> sentConnections;
 
-	@OneToMany(mappedBy = "target", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "target", cascade = CascadeType.ALL)
 	private List<UserConnection> receivedConnections;
-	
+
 	@Transient
 	public List<User> getFriends() {
 	    return Stream.concat(

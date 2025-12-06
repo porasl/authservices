@@ -64,9 +64,9 @@ public class MeConnectionsController {
     }
 
     // Alias
-    @GetMapping(value = "/friends", produces = "application/json")
+    @GetMapping(value = "/connections", produces = "application/json")
     public ResponseEntity<List<FriendSummaryDto>> listFriendsAlias(@AuthenticationPrincipal Object principal) {
-        log.debug("GET /friends called with principal: {}", principalInfo(principal));
+        log.debug("GET /me/connections called with principal: {}", principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
         log.info("Listing friends (alias) for user {}", meId);
 
