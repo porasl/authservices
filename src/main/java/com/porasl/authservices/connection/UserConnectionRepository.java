@@ -19,7 +19,7 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
 
     Optional<UserConnection> findByRequesterIdAndTargetId(Long requesterId, Long targetId);
 
-    Optional<UserConnection> findByRequesterIdAndTargetIdAndStatus(
+    UserConnection findByRequesterIdAndTargetIdAndStatus(
             Long requesterId, Long targetId, Status status);
 
     List<UserConnection> findByRequesterIdAndStatus(Long requesterId, Status status);
@@ -101,5 +101,22 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
     
 	Object findByUserIdAndTargetUserId(long requesterId, long id);
 
-	User findByUserIdAndTargetUserIdAndStatus(long id, long requesterId, Status pending);
+	UserConnection findByUser_IdAndTargetUser_IdAndStatus(
+		    long userId,
+		    long targetUserId,
+		    UserConnection.Status status
+		);
+	
+	@Query("""
+		    SELECT uc FROM UserConnection uc
+		    WHERE uc.user.id = :userId
+		      AND uc.targetUser.id = :targetUserId
+		      AND uc.status = :status
+		    """)
+		UserConnection findConnection(
+		    @Param("userId") long userId,
+		    @Param("targetUserId") long targetUserId,
+		    @Param("status") UserConnection.Status status
+		);
+
 }

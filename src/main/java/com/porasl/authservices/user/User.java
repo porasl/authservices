@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.porasl.authservices.connection.UserConnection;
+import com.porasl.authservices.connection.UserConnection.Status;
 import com.porasl.authservices.token.Token;
 
 import jakarta.persistence.CascadeType;
@@ -335,6 +336,11 @@ public class User implements UserDetails {
 	           ", firstname='" + firstname + '\'' + 
 	           ", lastname='" + lastname + '\'' +
 	           '}';
+	}
+
+	public void setStatus(Status accepted) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

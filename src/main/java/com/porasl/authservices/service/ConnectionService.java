@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.porasl.authservices.connection.FriendMapper;
 import com.porasl.authservices.connection.UserConnection;
+import com.porasl.authservices.connection.UserConnection.Status;
 import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.dto.ConnectionDto;
 import com.porasl.authservices.dto.FriendSummaryDto;
@@ -70,11 +71,10 @@ public class ConnectionService {
         var reverse = connRepo.findByRequesterIdAndTargetIdAndStatus(
                 targetId, requesterId, UserConnection.Status.PENDING);
 
-        if (reverse.isPresent()) {
-            var a = reverse.get();
-            a.setStatus(UserConnection.Status.ACCEPTED);
-            a.setUpdatedAt(Instant.now());
-            connRepo.save(a);
+        if (reverse != null) {
+            reverse.setStatus(UserConnection.Status.ACCEPTED);
+            reverse.setUpdatedAt(Instant.now());
+            connRepo.save(reverse);
 
             var b = new UserConnection();
             b.setRequester(requester);
@@ -138,12 +138,12 @@ public class ConnectionService {
         
 
         // 4) Reverse pending? -> accept both
-        User reversePending = connRepo.findByUserIdAndTargetUserIdAndStatus(
+        UserConnection reversePending = connRepo.findByRequesterIdAndTargetIdAndStatus(
                 target.getId(), requesterId, UserConnection.Status.PENDING);
         if (reversePending!=null) {
-        	reversePending.setStatus(false);
-        	reversePending.setUpdatedDate(new Date().getTime());
-        	userRepo.save(reversePending);
+        	reversePending.setStatus(Status.ACCEPTED);
+        	reversePending.setUpdatedAt(Instant.now());
+        	connRepo.save(reversePending);
 
             var b = new UserConnection();
             b.setId(requesterId);

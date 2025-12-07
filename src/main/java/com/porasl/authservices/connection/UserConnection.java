@@ -32,6 +32,13 @@ public class UserConnection {
     @JoinColumn(name = "target_id", nullable = false)
     private User target;
 
+    @ManyToOne
+    private User user;
+
+    @ManyToOne
+    private User targetUser;
+    
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 16)
     private Status status;
