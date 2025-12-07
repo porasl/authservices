@@ -61,4 +61,9 @@ public class UserConnection {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
+
+	public void setTargetUserId(long id2) {
+		// TODO Auto-generated method stub
+		
+	}
 }

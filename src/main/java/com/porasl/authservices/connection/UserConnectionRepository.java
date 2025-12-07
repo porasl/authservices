@@ -97,4 +97,9 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
     List<User> findCounterpartiesByStatus(
             @Param("userId") Long userId,
             @Param("status") Status status);
+
+    
+	Object findByUserIdAndTargetUserId(long requesterId, long id);
+
+	User findByUserIdAndTargetUserIdAndStatus(long id, long requesterId, Status pending);
 }

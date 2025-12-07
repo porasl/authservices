@@ -2,7 +2,7 @@ package com.porasl.authservices.service;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -16,6 +16,7 @@ import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.dto.ConnectionDto;
 import com.porasl.authservices.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
+import com.porasl.authservices.user.User.UserBuilder;
 import com.porasl.authservices.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -114,14 +115,13 @@ public class ConnectionService {
 
         // 2) If nobody exists at all -> create placeholder user
         if (target == null) {
-            target = User.builder()
+            target = ((UserBuilder) User.builder()
                     .email(email)
                     .firstname(null)          // or "Pending"
                     .lastname(null)
                     .password(null)          // no password yet
                     .isPlaceholder(true)     // <--- important
-                    .enabled(false)          // optional: don't allow login
-                    .accountNonLocked(true)
+                    .accountNonLocked(true))
                     .accountNonExpired(true)
                     .credentialsNonExpired(true)
                     .build();
@@ -134,22 +134,19 @@ public class ConnectionService {
         }
 
         // 3) Check for existing connection
-        var existing = connRepo.findByUserIdAndTargetUserId(requesterId, target.getId());
-        if (existing.isPresent()) {
-            return existing.get();
-        }
+        Object existing = connRepo.findByUserIdAndTargetUserId(requesterId, target.getId());
+        
 
         // 4) Reverse pending? -> accept both
-        var reversePending = connRepo.findByUserIdAndTargetUserIdAndStatus(
+        User reversePending = connRepo.findByUserIdAndTargetUserIdAndStatus(
                 target.getId(), requesterId, UserConnection.Status.PENDING);
-        if (reversePending.isPresent()) {
-            var a = reversePending.get();
-            a.setStatus(UserConnection.Status.ACCEPTED);
-            a.setUpdatedAt(Instant.now());
-            connRepo.save(a);
+        if (reversePending!=null) {
+        	reversePending.setStatus(false);
+        	reversePending.setUpdatedDate(new Date().getTime());
+        	userRepo.save(reversePending);
 
             var b = new UserConnection();
-            b.setUserId(requesterId);
+            b.setId(requesterId);
             b.setTargetUserId(target.getId());
             b.setStatus(UserConnection.Status.ACCEPTED);
             b.setCreatedBy(requesterId);
@@ -160,7 +157,7 @@ public class ConnectionService {
 
         // 5) Otherwise create new PENDING edge
         var edge = new UserConnection();
-        edge.setUserId(requesterId);
+        edge.setId(requesterId);
         edge.setTargetUserId(target.getId());
         edge.setStatus(UserConnection.Status.PENDING);
         edge.setCreatedBy(requesterId);

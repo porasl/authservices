@@ -59,6 +59,7 @@ public class User implements UserDetails {
 	private int updatedby;
 	private boolean approved;
 	private boolean blocked;
+	private boolean accountNonExpired;
 	private String phoneNumber;
 
 	@Column(name = "updateddate")
@@ -115,11 +116,6 @@ public class User implements UserDetails {
 	}
 
 	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
-
-	@Override
 	public boolean isAccountNonLocked() {
 		return true;
 	}
@@ -150,6 +146,14 @@ public class User implements UserDetails {
 		this.blocked = blocked;
 	}
 
+	public boolean isAccountNonExpired() {
+		return accountNonExpired;
+	}
+
+	public void setAccountNonExpired(boolean accountNonExpired) {
+		this.accountNonExpired = accountNonExpired;
+	}
+	
 	public boolean isApproved() {
 		return approved;
 	}
@@ -208,6 +212,7 @@ public class User implements UserDetails {
 		private boolean status;
 		private boolean approved;
 		private boolean blocked;
+		private boolean accountNonExpired;
 		private long createdDate;
 		private long updatedDate;
 		private String profileImageUrl;
@@ -256,6 +261,11 @@ public class User implements UserDetails {
 			this.blocked = blocked;
 			return this;
 		}
+		
+		public UserBuilder accountNonExpired(boolean accountNonExpired) {
+			this.blocked = accountNonExpired;
+			return this;
+		}
 
 		public UserBuilder createdDate(long createdDate) {
 			this.createdDate = createdDate;
@@ -283,10 +293,20 @@ public class User implements UserDetails {
 			user.status = this.status;
 			user.approved = this.approved;
 			user.blocked = this.blocked;
+			user.accountNonExpired= this.accountNonExpired;
 			user.createdDate = this.createdDate;
 			user.updatedDate = this.updatedDate;
 			user.profileImageUrl = this.profileImageUrl;
 			return user;
+		}
+
+		public Object accountNonLocked(boolean accountNonExpired) {
+			return accountNonExpired;
+		}
+
+		public UserBuilder credentialsNonExpired(boolean accountNonExpired) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 	

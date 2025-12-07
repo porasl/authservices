@@ -53,8 +53,7 @@ public class AuthenticationService {
 	        user.setFirstname(request.getFirstname());
 	        user.setLastname(request.getLastname());
 	        user.setPassword(passwordEncoder.encode(request.getPassword()));
-	        user.setIsPlaceholder(false);
-	        user.setEnabled(true);  // or whatever your flow is
+	        user.setPlaceholder(false);
 	    }else {
         user = User.builder()
         .firstname(request.getFirstname())
