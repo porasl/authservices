@@ -102,7 +102,7 @@ public class ConnectionService {
     }
 
     @Transactional
-    public UserConnection requestByEmail(long requesterId, String targetEmail) {
+    public UserConnection acceptRrequestByEmail(long userId, long target_user_id String targetEmail) {
         if (targetEmail == null || targetEmail.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetEmail is required");
         }
@@ -129,27 +129,27 @@ public class ConnectionService {
             target = userRepo.save(target);
         }
 
-        if (requesterId == target.getId()) {
+        if (userId == target.getId()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
         }
 
         // 3) Check for existing connection
-        Object existing = connRepo.findByUserIdAndTargetUserId(requesterId, target.getId());
+        Object existing = connRepo.findByUserIdAndTargetUserId(userId, target.getId());
         
 
         // 4) Reverse pending? -> accept both
         UserConnection reversePending = connRepo.findByRequesterIdAndTargetIdAndStatus(
-                target.getId(), requesterId, UserConnection.Status.PENDING);
+                target.getId(), userId, UserConnection.Status.PENDING);
         if (reversePending!=null) {
         	reversePending.setStatus(Status.ACCEPTED);
         	reversePending.setUpdatedAt(Instant.now());
         	connRepo.save(reversePending);
 
             var b = new UserConnection();
-            b.setId(requesterId);
-            b.setTargetUserId(target.getId());
+            b.setId(userId);
+            b.set(target.getId());
             b.setStatus(UserConnection.Status.ACCEPTED);
-            b.setCreatedBy(requesterId);
+            b.setCreatedBy(userId);
             b.setCreatedAt(Instant.now());
             b.setUpdatedAt(Instant.now());
             return connRepo.save(b);
@@ -157,10 +157,10 @@ public class ConnectionService {
 
         // 5) Otherwise create new PENDING edge
         var edge = new UserConnection();
-        edge.setId(requesterId);
-        edge.setTargetUserId(target.getId());
+        edge.setId(userId);
+        edge.setTa(target.getId());
         edge.setStatus(UserConnection.Status.PENDING);
-        edge.setCreatedBy(requesterId);
+        edge.setCreatedBy(userId);
         edge.setCreatedAt(Instant.now());
         edge.setUpdatedAt(Instant.now());
         return connRepo.save(edge);

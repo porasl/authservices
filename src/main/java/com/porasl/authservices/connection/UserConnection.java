@@ -10,7 +10,7 @@ import lombok.*;
 @Entity
 @Table(
     name = "user_connections",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"requester_id", "target_id"})
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "target_user_id"})
 )
 @Data
 @Builder
@@ -24,20 +24,16 @@ public class UserConnection {
 
     /** The user who initiated the request */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User requester;
 
     /** The user receiving the request */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_id", nullable = false)
+    @JoinColumn(name = "target_user_id", nullable = false)
     private User target;
 
     @ManyToOne
     private User user;
-
-    @ManyToOne
-    private User targetUser;
-    
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 16)
@@ -68,9 +64,4 @@ public class UserConnection {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
-
-	public void setTargetUserId(long id2) {
-		// TODO Auto-generated method stub
-		
-	}
 }
