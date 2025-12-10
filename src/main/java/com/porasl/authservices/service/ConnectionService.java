@@ -139,7 +139,7 @@ public class ConnectionService {
 
         // 4) Reverse pending? -> accept both
         UserConnection reversePending = connRepo.findByRequesterIdAndTargetIdAndStatus(
-                target.getId(), target_user_id, UserConnection.Status.PENDING);
+                target.getId(), target_user_id);
         if (reversePending!=null) {
         	reversePending.setStatus(Status.ACCEPTED);
         	reversePending.setUpdatedAt(Instant.now());
