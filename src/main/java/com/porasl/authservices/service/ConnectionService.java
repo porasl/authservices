@@ -102,7 +102,7 @@ public class ConnectionService {
     }
 
     @Transactional
-    public UserConnection acceptRrequestByEmail(long userId, long target_user_id String targetEmail) {
+    public UserConnection createConnectionRrequestByEmail(long requester_user_id,long target_user_id, String targetEmail) {
         if (targetEmail == null || targetEmail.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetEmail is required");
         }
@@ -129,17 +129,17 @@ public class ConnectionService {
             target = userRepo.save(target);
         }
 
-        if (userId == target.getId()) {
+        if (requester_user_id == target.getId()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
         }
 
         // 3) Check for existing connection
-        Object existing = connRepo.findByUserIdAndTargetUserId(userId, target.getId());
+        Object existing = connRepo.findByUserIdAndTargetUserId(target_user_id, target.getId());
         
 
         // 4) Reverse pending? -> accept both
         UserConnection reversePending = connRepo.findByRequesterIdAndTargetIdAndStatus(
-                target.getId(), userId, UserConnection.Status.PENDING);
+                target.getId(), target_user_id, UserConnection.Status.PENDING);
         if (reversePending!=null) {
         	reversePending.setStatus(Status.ACCEPTED);
         	reversePending.setUpdatedAt(Instant.now());
