@@ -63,8 +63,8 @@ public class ConnectionService {
 
         // Already exists?
         var existing = connRepo.findByRequesterIdAndTargetId(requesterId, targetId);
-        if (existing.isPresent()) {
-            return ConnectionDto.of(existing.get(), false);
+        if (existing != null) {
+            return ConnectionDto.of(existing, true);
         }
 
         // Reverse pending
@@ -102,7 +102,7 @@ public class ConnectionService {
     }
 
     @Transactional
-    public UserConnection createConnectionRrequestByEmail(long requester_user_id,long target_user_id, String targetEmail) {
+    public UserConnection createConnectionRrequestByEmail(long requester_user_id, String targetEmail, String notes) {
         if (targetEmail == null || targetEmail.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetEmail is required");
         }
@@ -112,7 +112,7 @@ public class ConnectionService {
         // 1) If a real user already exists -> use them
         User target = userRepo.findByEmailIgnoreCaseAndIsPlaceholderFalse(email)
                 .orElseGet(() -> userRepo.findByEmailIgnoreCase(email).orElse(null));
-
+        
         // 2) If nobody exists at all -> create placeholder user
         if (target == null) {
             target = ((UserBuilder) User.builder()
@@ -128,42 +128,19 @@ public class ConnectionService {
 
             target = userRepo.save(target);
         }
+        
+        //check the user connection for the same user & requester
+        UserConnection userConnection = connRepo.findByRequesterIdAndTargetId(requester_user_id, target.getId());
+        if(userConnection == null) {    
+            // Create a Connection
+        	userConnection = connRepo.createConnection(requester_user_id, target.getId(), notes);
+        }
 
         if (requester_user_id == target.getId()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot connect to self");
         }
-
-        // 3) Check for existing connection
-        Object existing = connRepo.findByUserIdAndTargetUserId(target_user_id, target.getId());
         
-
-        // 4) Reverse pending? -> accept both
-        UserConnection reversePending = connRepo.findByRequesterIdAndTargetIdAndStatus(
-                target.getId(), target_user_id);
-        if (reversePending!=null) {
-        	reversePending.setStatus(Status.ACCEPTED);
-        	reversePending.setUpdatedAt(Instant.now());
-        	connRepo.save(reversePending);
-
-            var b = new UserConnection();
-            b.setId(userId);
-            b.set(target.getId());
-            b.setStatus(UserConnection.Status.ACCEPTED);
-            b.setCreatedBy(userId);
-            b.setCreatedAt(Instant.now());
-            b.setUpdatedAt(Instant.now());
-            return connRepo.save(b);
-        }
-
-        // 5) Otherwise create new PENDING edge
-        var edge = new UserConnection();
-        edge.setId(userId);
-        edge.setTa(target.getId());
-        edge.setStatus(UserConnection.Status.PENDING);
-        edge.setCreatedBy(userId);
-        edge.setCreatedAt(Instant.now());
-        edge.setUpdatedAt(Instant.now());
-        return connRepo.save(edge);
+        return userConnection;
     }
 
 

@@ -49,7 +49,7 @@ public class MeConnectionsController {
         }
 
         log.info("User {} creating connection request for {}", meId, req.getTargetEmail());
-        UserConnection created = connectionService.requestByEmail(meId, req.getTargetEmail().trim());
+        UserConnection created = connectionService.createConnectionRrequestByEmail(meId, req.getTargetEmail().trim(),req.getNotes());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

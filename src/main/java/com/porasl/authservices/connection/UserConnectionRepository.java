@@ -17,7 +17,7 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
     // BASIC LOOKUPS (new JPA relationship names)
     // ==========================================================
 
-    Optional<UserConnection> findByRequesterIdAndTargetId(Long requesterId, Long targetId);
+    UserConnection findByRequesterIdAndTargetId(Long requesterId, Long targetId);
 
     UserConnection findByRequesterIdAndTargetIdAndStatus(
             Long requesterId, Long targetId, Status status);
@@ -98,14 +98,6 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
             @Param("userId") Long userId,
             @Param("status") Status status);
 
-    
-	Object findByUserIdAndTargetUserId(long requesterId, long id);
-
-	UserConnection findByUser_IdAndTargetUser_IdAndStatus(
-		    long userId,
-		    long targetUserId,
-		    UserConnection.Status status
-		);
 	
 	@Query("""
 		    SELECT uc FROM UserConnection uc
@@ -113,10 +105,24 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
 		      AND uc.targetUser.id = :targetUserId
 		      AND uc.status = :status
 		    """)
-		UserConnection findConnection(
+		UserConnection findConnectionWithStatus(
 		    @Param("userId") long userId,
 		    @Param("targetUserId") long targetUserId,
 		    @Param("status") UserConnection.Status status
 		);
+
+	
+	@Query("""
+		    SELECT uc FROM UserConnection uc
+		    WHERE uc.user.id = :userId
+		      AND uc.targetUser.id = :targetUserId
+		    """)
+		UserConnection findConnection(
+		    @Param("userId") long userId,
+		    @Param("targetUserId") long targetUserId
+		);
+	
+	//Create the connection
+	UserConnection createConnection(long id, long target_user_id, String notes);
 
 }

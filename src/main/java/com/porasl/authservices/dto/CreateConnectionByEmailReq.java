@@ -11,4 +11,6 @@ public class CreateConnectionByEmailReq {
   @NotBlank
   @Email
   private String targetEmail;
+  
+  private String notes;
 }
