@@ -32,23 +32,20 @@ public class UserConnection {
     @JoinColumn(name = "target_user_id", nullable = false)
     private User target;
 
-    @ManyToOne
-    private User user;
-    
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 16)
+    @Column(nullable = false, length = 16)
     private Status status;
 
-    @Column(name = "note", length = 255)
+    @Column(length = 255)
     private String note;
 
-    @Column(name = "created_by", nullable = false)
+    @Column(nullable = false)
     private Long createdBy;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private Instant updatedAt;
 
     public enum Status { PENDING, ACCEPTED, BLOCKED }

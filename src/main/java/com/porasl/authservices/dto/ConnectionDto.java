@@ -6,8 +6,8 @@ import lombok.*;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class ConnectionDto {
   private Long id;
-  private Long requesterId;
-  private Long targetId;
+  private Long user_id;
+  private Long target_user_id;
   private String status;
   private String note;          // <— NEW
   private long createdAt;
@@ -17,8 +17,8 @@ public class ConnectionDto {
   public static ConnectionDto of(UserConnection uc, boolean created) {
     return ConnectionDto.builder()
         .id(uc.getId())
-        .requesterId(uc.getRequester().getId())
-        .targetId(uc.getTarget().getId())
+        .target_user_id(uc.getTarget().getId())
+        .user_id(uc.getRequester().getId())
         .status(uc.getStatus().name())
         .note(uc.getNote())
         .createdAt(uc.getCreatedAt() == null ? 0 : uc.getCreatedAt().toEpochMilli())
