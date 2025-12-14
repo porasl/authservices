@@ -29,7 +29,7 @@ public class ConnectionService {
     private final UserConnectionRepository connRepo;
 
     // ==========================================================
-    // LIST FRIENDS
+    // LIST Connections
     // ==========================================================
 
     public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
@@ -144,7 +144,6 @@ public class ConnectionService {
                     HttpStatus.BAD_REQUEST, "cannot connect to self");
         }
 
-        // ✅ FIX: make target effectively final for lambda
         final User resolvedTarget = target;
 
         return connRepo
@@ -152,7 +151,7 @@ public class ConnectionService {
                 .orElseGet(() -> {
                     UserConnection uc = new UserConnection();
                     uc.setRequester(userRepo.getReferenceById(requesterUserId));
-                    uc.setTarget(resolvedTarget);   // ✅ now legal
+                    uc.setTarget(resolvedTarget);   
                     uc.setStatus(Status.PENDING);
                     uc.setNote(notes);
                     uc.setCreatedBy(requesterUserId);
@@ -163,7 +162,7 @@ public class ConnectionService {
     }
 
     // ==========================================================
-    // ACCEPT
+    // ACCEPT Connection
     // ==========================================================
 
     @Transactional
@@ -185,7 +184,7 @@ public class ConnectionService {
     }
 
     // ==========================================================
-    // DELETE
+    // DELETE Connection
     // ==========================================================
 
     @Transactional
