@@ -12,12 +12,13 @@ public final class FriendMapper {
     String fn = u.getFirstname() == null ? "" : u.getFirstname();
     String ln = u.getLastname() == null ? "" : u.getLastname();
     return FriendSummaryDto.builder()
-        .requesterId(u.getId())
+        .targetId(u.getId())
         .email(u.getEmail())
         .firstname(fn)
         .lastname(ln)
         .profileImageUrl(u.getProfileImageUrl())  // this must exist on User
-        .since(null)
+        .since(u.getCreatedDate())
+        .email(u.getEmail())
         .build();
   }
 
@@ -33,7 +34,7 @@ public final class FriendMapper {
         .lastname(ln)
         .profileImageUrl(u.getProfileImageUrl())  // this must exist on User
         .connectionId(connectionId)
-        .since(sinceEpochMillis)
+        .since(u.getCreatedDate())
         .build();
   }
 }

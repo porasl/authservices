@@ -59,8 +59,7 @@ public class MeConnectionsController {
         	    created.getTarget().getCreatedDate(),
         	    created.getNote(),
         	    created.getRequester().getId(),
-        	    created.getTarget().getId()
-        				);
+        	    created.getTarget().getId());
         				
         				
         return ResponseEntity.status(HttpStatus.CREATED).body(friendSummaryDto);
