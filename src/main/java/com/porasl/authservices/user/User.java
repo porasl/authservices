@@ -312,9 +312,11 @@ public class User implements UserDetails {
 	}
 	
 	@OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
+	@JsonIgnore
 	private List<UserConnection> sentConnections;
 
 	@OneToMany(mappedBy = "target", cascade = CascadeType.ALL)
+	@JsonIgnore
 	private List<UserConnection> receivedConnections;
 
 	@Transient

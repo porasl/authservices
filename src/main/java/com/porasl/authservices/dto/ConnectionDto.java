@@ -9,10 +9,10 @@ public class ConnectionDto {
   private Long user_id;
   private Long target_user_id;
   private String status;
-  private String note;          // <— NEW
+  private String note;         
   private long createdAt;
   private long updatedAt;
-  private boolean created;      // true if newly created
+  private boolean created;      
 
   public static ConnectionDto of(UserConnection uc, boolean created) {
     return ConnectionDto.builder()

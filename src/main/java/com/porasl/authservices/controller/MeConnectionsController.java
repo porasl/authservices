@@ -37,7 +37,7 @@ public class MeConnectionsController {
 
     // ---- Create a connection request ----
     @PostMapping(path = "/connections", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<UserConnection> createByEmail(
+    public ResponseEntity<FriendSummaryDto> createByEmail(
             @AuthenticationPrincipal Object principal,
             @Valid @RequestBody CreateConnectionByEmailReq req) {
 
@@ -50,7 +50,20 @@ public class MeConnectionsController {
 
         log.info("User {} creating connection request for {}", meId, req.getTargetEmail());
         UserConnection created = connectionService.createConnectionRrequestByEmail(meId, req.getTargetEmail().trim(),req.getNotes());
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        FriendSummaryDto friendSummaryDto = new FriendSummaryDto( 
+        		created.getId(),
+        		created.getTarget().getEmail(),
+        	    created.getTarget().getFirstname(),
+        	    created.getTarget().getLastname(),
+        	    created.getTarget().getProfileImageUrl(),
+        	    created.getTarget().getCreatedDate(),
+        	    created.getNote(),
+        	    created.getRequester().getId(),
+        	    created.getTarget().getId()
+        				);
+        				
+        				
+        return ResponseEntity.status(HttpStatus.CREATED).body(friendSummaryDto);
     }
 
     @GetMapping(value = "/connections/accepted", produces = "application/json")
@@ -71,6 +84,7 @@ public class MeConnectionsController {
         log.info("Listing friends (alias) for user {}", meId);
 
         List<FriendSummaryDto> out = connectionService.listAcceptedConnections(meId);
+
         return ResponseEntity.ok(out == null ? java.util.Collections.emptyList() : out);
     }
 
