@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.porasl.authservices.connection.UserConnection;
 import com.porasl.authservices.dto.CreateConnectionByEmailReq;
-import com.porasl.authservices.dto.FriendSummaryDto;
+import com.porasl.common.dto.FriendSummaryDto;
 import com.porasl.authservices.service.ConnectionService;
 import com.porasl.authservices.user.User;
 import com.porasl.authservices.user.UserService;

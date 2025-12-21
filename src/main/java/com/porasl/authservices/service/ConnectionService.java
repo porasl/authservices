@@ -14,7 +14,7 @@ import com.porasl.authservices.connection.UserConnection;
 import com.porasl.authservices.connection.UserConnection.Status;
 import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.dto.ConnectionDto;
-import com.porasl.authservices.dto.FriendSummaryDto;
+import com.porasl.common.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
 import com.porasl.authservices.user.User.UserBuilder;
 import com.porasl.authservices.user.UserRepository;

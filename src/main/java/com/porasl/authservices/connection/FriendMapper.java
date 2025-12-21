@@ -1,6 +1,6 @@
 package com.porasl.authservices.connection;
 
-import com.porasl.authservices.dto.FriendSummaryDto;
+import com.porasl.common.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
 
 public final class FriendMapper {

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.porasl.authservices.dto.FriendSummaryDto;
+import com.porasl.common.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
 import com.porasl.authservices.user.UserRepository;
 
