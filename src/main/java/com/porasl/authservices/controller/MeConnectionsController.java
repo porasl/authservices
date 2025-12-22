@@ -22,6 +22,8 @@ import com.porasl.authservices.service.ConnectionService;
 import com.porasl.authservices.user.User;
 import com.porasl.authservices.user.UserService;
 
+import com.porasl.common.utils.Utils;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +43,7 @@ public class MeConnectionsController {
             @AuthenticationPrincipal Object principal,
             @Valid @RequestBody CreateConnectionByEmailReq req) {
 
-        log.debug("POST /connections called with principal: {}", principalInfo(principal));
+        log.debug("POST /connections called with principal: {}", Utils.principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
 
         if (req == null || req.getTargetEmail() == null || req.getTargetEmail().isBlank()) {
@@ -67,7 +69,7 @@ public class MeConnectionsController {
 
     @GetMapping(value = "/connections/accepted", produces = "application/json")
     public ResponseEntity<List<FriendSummaryDto>> listAccepted(@AuthenticationPrincipal Object principal) {
-        log.debug("GET /connections/accepted called with principal: {}", principalInfo(principal));
+        log.debug("GET /connections/accepted called with principal: {}", Utils.principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
         log.info("Listing accepted connections for user {}", meId);
 
@@ -78,7 +80,7 @@ public class MeConnectionsController {
     // Alias
     @GetMapping(value = "/connections", produces = "application/json")
     public ResponseEntity<List<FriendSummaryDto>> listFriendsAlias(@AuthenticationPrincipal Object principal) {
-        log.debug("GET /me/connections called with principal: {}", principalInfo(principal));
+        log.debug("GET /me/connections called with principal: {}", Utils.principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
         log.info("Listing friends (alias) for user {}", meId);
 
@@ -92,7 +94,7 @@ public class MeConnectionsController {
             @AuthenticationPrincipal Object principal,
             @PathVariable("id") Long connectionId) {
 
-        log.debug("POST /connections/{}/accept called with principal: {}", connectionId, principalInfo(principal));
+        log.debug("POST /connections/{}/accept called with principal: {}", connectionId, Utils.principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
         log.info("User {} accepting connection {}", meId, connectionId);
 
@@ -105,7 +107,7 @@ public class MeConnectionsController {
             @AuthenticationPrincipal Object principal,
             @PathVariable("id") Long connectionId) {
 
-        log.debug("DELETE /connections/{} called with principal: {}", connectionId, principalInfo(principal));
+        log.debug("DELETE /connections/{} called with principal: {}", connectionId, Utils.principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
         log.info("User {} deleting connection {}", meId, connectionId);
 
@@ -122,7 +124,7 @@ public class MeConnectionsController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             log.warn("No @AuthenticationPrincipal resolved. Context auth={} principal={}",
                     (auth == null ? null : auth.getClass().getName()),
-                    (auth == null ? null : principalInfo(auth.getPrincipal())));
+                    (auth == null ? null : Utils.principalInfo(auth.getPrincipal())));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No authenticated user");
         }
         return id.get();
@@ -156,8 +158,5 @@ public class MeConnectionsController {
         return Optional.empty();
     }
 
-    private String principalInfo(Object principal) {
-        if (principal == null) return "null";
-        return principal.getClass().getSimpleName() + "(" + principal.toString() + ")";
-    }
+  
 }
