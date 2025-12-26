@@ -1,7 +1,6 @@
 package com.porasl.authservices.service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -16,7 +15,6 @@ import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.dto.ConnectionDto;
 import com.porasl.common.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
-import com.porasl.authservices.user.User.UserBuilder;
 import com.porasl.authservices.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,23 +27,22 @@ public class ConnectionService {
     private final UserConnectionRepository connRepo;
 
     // ==========================================================
-    // LIST Connections
+    // LIST Connections (FIXED)
     // ==========================================================
 
     public List<FriendSummaryDto> listAcceptedConnections(Long userId) {
 
-        List<User> requesterSide =
-                connRepo.findAcceptedTargets(userId, Status.ACCEPTED);
+        User me = userRepo.findById(userId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "User not found"));
 
-        List<User> targetSide =
-                connRepo.findAcceptedRequesters(userId, Status.ACCEPTED);
+        List<UserConnection> connections =
+                connRepo.findAllByRequesterOrTargetAndStatus(
+                        me, me, Status.ACCEPTED);
 
-        List<User> merged = new ArrayList<>();
-        merged.addAll(requesterSide);
-        merged.addAll(targetSide);
-
-        return merged.stream()
-                .map(FriendMapper::toDto)
+        return connections.stream()
+                .map(c -> FriendMapper.toDto(c, me)) // ✅ FIXED
                 .toList();
     }
 
@@ -71,47 +68,41 @@ public class ConnectionService {
                         new ResponseStatusException(
                                 HttpStatus.NOT_FOUND, "target not found"));
 
-        // Already exists?
-        var existingOpt =
+        var existing =
                 connRepo.findByRequesterIdAndTargetId(requesterId, targetId);
 
-        if (existingOpt.isPresent()) {
-            return ConnectionDto.of(existingOpt.get(), true);
+        if (existing.isPresent()) {
+            return ConnectionDto.of(existing.get(), true);
         }
 
-        // Reverse pending → accept it
-        var reverseOpt =
+        var reverse =
                 connRepo.findByRequesterIdAndTargetIdAndStatus(
                         targetId, requesterId, Status.PENDING);
 
-        if (reverseOpt.isPresent()) {
-            UserConnection reverse = reverseOpt.get();
-            reverse.setStatus(Status.ACCEPTED);
-            reverse.setUpdatedAt(Instant.now());
-            connRepo.save(reverse);
-
-            return ConnectionDto.of(reverse, true);
+        if (reverse.isPresent()) {
+            UserConnection uc = reverse.get();
+            uc.setStatus(Status.ACCEPTED);
+            uc.setUpdatedAt(Instant.now());
+            return ConnectionDto.of(connRepo.save(uc), true);
         }
 
-        // Create new pending
-        UserConnection edge = new UserConnection();
-        edge.setRequester(requester);
-        edge.setTarget(target);
-        edge.setStatus(Status.PENDING);
-        edge.setCreatedBy(requesterId);
-        edge.setCreatedAt(Instant.now());
-        edge.setUpdatedAt(Instant.now());
+        UserConnection uc = new UserConnection();
+        uc.setRequester(requester);
+        uc.setTarget(target);
+        uc.setStatus(Status.PENDING);
+        uc.setCreatedBy(requesterId);
+        uc.setCreatedAt(Instant.now());
+        uc.setUpdatedAt(Instant.now());
 
-        UserConnection saved = connRepo.save(edge);
-        return ConnectionDto.of(saved, true);
+        return ConnectionDto.of(connRepo.save(uc), true);
     }
 
     // ==========================================================
-    // REQUEST BY EMAIL (PLACEHOLDER SUPPORT)
+    // REQUEST BY EMAIL
     // ==========================================================
 
     @Transactional
-    public UserConnection createConnectionRrequestByEmail(
+    public UserConnection createConnectionRequestByEmail(
             long requesterUserId,
             String targetEmail,
             String notes) {
@@ -123,35 +114,22 @@ public class ConnectionService {
 
         String email = targetEmail.trim().toLowerCase();
 
-        User target = userRepo.findByEmailIgnoreCaseAndIsPlaceholderFalse(email)
-                .orElseGet(() ->
-                        userRepo.findByEmailIgnoreCase(email).orElse(null));
-
-        if (target == null) {
-            target = ((UserBuilder) User.builder()
-                    .email(email)
-                    .isPlaceholder(true)
-                    .accountNonLocked(true))
-                    .accountNonExpired(true)
-                    .credentialsNonExpired(true)
-                    .build();
-
-            target = userRepo.save(target);
-        }
+        User target = userRepo.findByEmailIgnoreCase(email)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "User not found"));
 
         if (requesterUserId == target.getId()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "cannot connect to self");
         }
 
-        final User resolvedTarget = target;
-
         return connRepo
-                .findByRequesterIdAndTargetId(requesterUserId, resolvedTarget.getId())
+                .findByRequesterIdAndTargetId(requesterUserId, target.getId())
                 .orElseGet(() -> {
                     UserConnection uc = new UserConnection();
                     uc.setRequester(userRepo.getReferenceById(requesterUserId));
-                    uc.setTarget(resolvedTarget);   
+                    uc.setTarget(target);
                     uc.setStatus(Status.PENDING);
                     uc.setNote(notes);
                     uc.setCreatedBy(requesterUserId);
@@ -173,7 +151,7 @@ public class ConnectionService {
                         new ResponseStatusException(
                                 HttpStatus.NOT_FOUND, "Connection not found"));
 
-        if (uc.getTarget().getId() != me.longValue()) {
+        if (uc.getTarget().getId() !=me) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Only the target may accept");
         }
@@ -195,8 +173,8 @@ public class ConnectionService {
                         new ResponseStatusException(
                                 HttpStatus.NOT_FOUND, "Connection not found"));
 
-        if (uc.getRequester().getId() != me
-                && uc.getTarget().getId() != me) {
+        if ((uc.getRequester().getId() != me)
+                && (uc.getTarget().getId() != me)){
 
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,

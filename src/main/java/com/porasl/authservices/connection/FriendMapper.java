@@ -3,44 +3,40 @@ package com.porasl.authservices.connection;
 import com.porasl.authservices.user.User;
 import com.porasl.common.dto.FriendSummaryDto;
 
+import java.util.Objects;
+
 public final class FriendMapper {
-  private FriendMapper() {}
 
-  public static FriendSummaryDto toDto(User u) {
-    if (u == null) return null;
+    private FriendMapper() {}
 
-    String fn = u.getFirstname() == null ? "" : u.getFirstname();
-    String ln = u.getLastname() == null ? "" : u.getLastname();
+    public static FriendSummaryDto toDto(
+            UserConnection connection,
+            User currentUser
+    ) {
+        if (connection == null || currentUser == null) {
+            return null;
+        }
 
-    return new FriendSummaryDto(
-        null,                       // connectionId
-        u.getEmail(),
-        fn,
-        ln,
-        u.getProfileImageUrl(),
-        u.getCreatedDate(),         // since
-        null,                       // notes
-        0L,                         // requesterId
-        u.getId()                   // targetId
-    );
-  }
+        User requester = connection.getRequester();
+        User target = connection.getTarget();
 
-  public static FriendSummaryDto toDto(User u, Long connectionId, Long sinceEpochMillis) {
-    if (u == null) return null;
+        // Determine the "other" user safely
+        User other = Objects.equals(requester.getId(), currentUser.getId())
+                ? target
+                : requester;
 
-    String fn = u.getFirstname() == null ? "" : u.getFirstname();
-    String ln = u.getLastname() == null ? "" : u.getLastname();
-
-    return new FriendSummaryDto(
-        connectionId,
-        u.getEmail(),
-        fn,
-        ln,
-        u.getProfileImageUrl(),
-        sinceEpochMillis,
-        null,
-        u.getId(),                  // requesterId
-        u.getId()                   // targetId (adjust if different)
-    );
-  }
+        return new FriendSummaryDto(
+                connection.getId(),                         // connectionId ✅
+                other.getEmail(),
+                other.getFirstname(),
+                other.getLastname(),
+                other.getProfileImageUrl(),
+                connection.getCreatedAt() != null
+                        ? connection.getCreatedAt().toEpochMilli()
+                        : null,                              // since ✅
+                connection.getNote(),
+                requester.getId(),                          // requesterId ✅
+                target.getId()                              // targetId ✅
+        );
+    }
 }

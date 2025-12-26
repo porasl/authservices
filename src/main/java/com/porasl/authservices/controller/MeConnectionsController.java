@@ -51,7 +51,7 @@ public class MeConnectionsController {
         }
 
         log.info("User {} creating connection request for {}", meId, req.getTargetEmail());
-        UserConnection created = connectionService.createConnectionRrequestByEmail(meId, req.getTargetEmail().trim(),req.getNotes());
+        UserConnection created = connectionService.createConnectionRequestByEmail(meId, req.getTargetEmail().trim(),req.getNotes());
         FriendSummaryDto friendSummaryDto = new FriendSummaryDto( 
         		created.getId(),
         		created.getTarget().getEmail(),
