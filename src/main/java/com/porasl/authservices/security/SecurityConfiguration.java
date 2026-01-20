@@ -58,6 +58,7 @@ public class SecurityConfiguration {
             "/auth/authenticateWithToken",
             "/auth/register",
             "/auth/login",
+            "/auth/validate/**",
             "/api-docs", 
             "/api-docs/**",
             "/swagger-resources", 
