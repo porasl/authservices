@@ -17,14 +17,16 @@ import com.porasl.common.dto.FriendSummaryDto;
 import com.porasl.authservices.user.User;
 import com.porasl.authservices.user.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ConnectionService {
 
     private final UserRepository userRepo;
     private final UserConnectionRepository connRepo;
+
+    public ConnectionService(UserRepository userRepo, UserConnectionRepository connRepo) {
+        this.userRepo = userRepo;
+        this.connRepo = connRepo;
+    }
 
     // ==========================================================
     // LIST Connections (FIXED)

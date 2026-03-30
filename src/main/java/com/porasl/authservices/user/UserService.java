@@ -3,6 +3,8 @@ package com.porasl.authservices.user;
 import java.security.Principal;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,18 +14,23 @@ import com.porasl.authservices.auth.ActivateRequest;
 import com.porasl.authservices.connection.UserConnectionRepository;
 import com.porasl.authservices.token.TokenRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-	@Slf4j
 	@Service
-	@RequiredArgsConstructor
 	public class UserService {
+
+	    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 	    private final UserRepository userRepository;
 	    private final TokenRepository tokenRepository;
 	    private final UserConnectionRepository connectionRepository;
 	    private final PasswordEncoder passwordEncoder; 
+
+	    public UserService(UserRepository userRepository, TokenRepository tokenRepository,
+	                       UserConnectionRepository connectionRepository, PasswordEncoder passwordEncoder) {
+	        this.userRepository = userRepository;
+	        this.tokenRepository = tokenRepository;
+	        this.connectionRepository = connectionRepository;
+	        this.passwordEncoder = passwordEncoder;
+	    }
 
 	    @Transactional
 	    public void deleteUserAndConnections(Principal connectedUser) {

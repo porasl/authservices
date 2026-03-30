@@ -1,17 +1,14 @@
-
 package com.porasl.authservices.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
-@Getter
-@Setter
-@NoArgsConstructor
 public class AuthenticationRequest {
 	private String email;
 	private String password;
 	private boolean approved;
+
+	public AuthenticationRequest() {}
 	
 	public String getEmail() {
 		return email;

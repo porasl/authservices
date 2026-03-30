@@ -25,17 +25,20 @@ import com.porasl.authservices.user.UserService;
 import com.porasl.common.utils.Utils;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth/me")
-@RequiredArgsConstructor
 public class MeConnectionsController {
 
     private static final Logger log = LoggerFactory.getLogger(MeConnectionsController.class);
 
     private final ConnectionService connectionService;
     private final UserService userService;
+
+    public MeConnectionsController(ConnectionService connectionService, UserService userService) {
+        this.connectionService = connectionService;
+        this.userService = userService;
+    }
 
     // ---- Create a connection request ----
     @PostMapping(path = "/connections", consumes = "application/json", produces = "application/json")

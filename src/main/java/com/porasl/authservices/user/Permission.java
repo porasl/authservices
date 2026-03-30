@@ -1,7 +1,5 @@
 package com.porasl.authservices.user;
 
-import lombok.Getter;
-
 public enum Permission {
 
     ADMIN_READ("admin:read"),
@@ -13,14 +11,12 @@ public enum Permission {
     MANAGER_CREATE("management:create"),
     MANAGER_DELETE("management:delete");
 
-    @Getter
     private final String permission;
     
     Permission (String permission) { 
     	this.permission = permission; 
     }
 
-    // Manual getter to ensure compilation
     public String getPermission() {
         return permission;
     }

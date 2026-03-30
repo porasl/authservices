@@ -12,15 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 public class Token {
 
@@ -41,18 +33,35 @@ public class Token {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   private User user;
-  
-//Optional: map the hash column (read-only)
- @Column(name = "token_sha256", insertable = false, updatable = false)
- private byte[] tokenSha256;
 
-  // Manual getters/setters to ensure compilation
+  @Column(name = "token_sha256", insertable = false, updatable = false)
+  private byte[] tokenSha256;
+
+  public Token() {}
+
+  public Token(Long id, String token, TokenType tokenType, boolean revoked, boolean expired, User user) {
+    this.id = id;
+    this.token = token;
+    this.tokenType = tokenType;
+    this.revoked = revoked;
+    this.expired = expired;
+    this.user = user;
+  }
+
+  public Long getId() { return id; }
+  public void setId(Long id) { this.id = id; }
+  public String getToken() { return token; }
+  public void setToken(String token) { this.token = token; }
+  public TokenType getTokenType() { return tokenType; }
+  public void setTokenType(TokenType tokenType) { this.tokenType = tokenType; }
   public boolean isExpired() { return expired; }
-  public boolean isRevoked() { return revoked; }
   public void setExpired(boolean expired) { this.expired = expired; }
+  public boolean isRevoked() { return revoked; }
   public void setRevoked(boolean revoked) { this.revoked = revoked; }
+  public User getUser() { return user; }
+  public void setUser(User user) { this.user = user; }
+  public byte[] getTokenSha256() { return tokenSha256; }
 
-  // Manual builder method
   public static TokenBuilder builder() {
     return new TokenBuilder();
   }
@@ -64,39 +73,20 @@ public class Token {
     private boolean expired;
     private User user;
 
-    public TokenBuilder token(String token) {
-      this.token = token;
-      return this;
-    }
-
-    public TokenBuilder tokenType(TokenType tokenType) {
-      this.tokenType = tokenType;
-      return this;
-    }
-
-    public TokenBuilder revoked(boolean revoked) {
-      this.revoked = revoked;
-      return this;
-    }
-
-    public TokenBuilder expired(boolean expired) {
-      this.expired = expired;
-      return this;
-    }
-
-    public TokenBuilder user(User user) {
-      this.user = user;
-      return this;
-    }
+    public TokenBuilder token(String token) { this.token = token; return this; }
+    public TokenBuilder tokenType(TokenType tokenType) { this.tokenType = tokenType; return this; }
+    public TokenBuilder revoked(boolean revoked) { this.revoked = revoked; return this; }
+    public TokenBuilder expired(boolean expired) { this.expired = expired; return this; }
+    public TokenBuilder user(User user) { this.user = user; return this; }
 
     public Token build() {
-      Token token = new Token();
-      token.token = this.token;
-      token.tokenType = this.tokenType;
-      token.revoked = this.revoked;
-      token.expired = this.expired;
-      token.user = this.user;
-      return token;
+      Token t = new Token();
+      t.token = this.token;
+      t.tokenType = this.tokenType;
+      t.revoked = this.revoked;
+      t.expired = this.expired;
+      t.user = this.user;
+      return t;
     }
   }
 }

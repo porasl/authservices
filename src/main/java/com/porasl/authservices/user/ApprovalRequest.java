@@ -1,13 +1,11 @@
 package com.porasl.authservices.user;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-@Builder
 public class ApprovalRequest {
 
     private int id;
+
+    public ApprovalRequest() {}
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 }

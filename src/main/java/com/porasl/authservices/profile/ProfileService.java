@@ -1,15 +1,19 @@
 package com.porasl.authservices.profile;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ProfileService {
 
-    private ProfileRepository repository;
+    private final ProfileRepository repository;
+
+    @Autowired
+    public ProfileService(ProfileRepository repository) {
+        this.repository = repository;
+    }
 
     public void save(ProfileRequest request) {
         var profile = Profile.builder()
@@ -30,4 +34,3 @@ public class ProfileService {
         return repository.findAll();
     }
 }
-

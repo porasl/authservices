@@ -1,6 +1,6 @@
 package com.porasl.authservices.profile;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,10 +12,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/profiles")
-@RequiredArgsConstructor
 public class ProfileController {
 
-    private ProfileService service;
+    private final ProfileService service;
+
+    @Autowired
+    public ProfileController(ProfileService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public ResponseEntity<?> save(

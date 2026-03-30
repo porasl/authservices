@@ -1,19 +1,7 @@
 package com.porasl.authservices.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Data
-@Builder
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class AuthenticationResponse {
 
   @JsonProperty("access_token")
@@ -21,14 +9,30 @@ public class AuthenticationResponse {
   @JsonProperty("refresh_token")
   private String refreshToken;
 
-  // Additional user info for frontend convenience
   private String firstname;
   private String lastname;
   private String profileImageUrl;
 
-  // Manual getters and builder to ensure compilation
+  public AuthenticationResponse() {}
+
+  public AuthenticationResponse(String accessToken, String refreshToken, String firstname, String lastname, String profileImageUrl) {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+    this.firstname = firstname;
+    this.lastname = lastname;
+    this.profileImageUrl = profileImageUrl;
+  }
+
   public String getAccessToken() { return accessToken; }
+  public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
   public String getRefreshToken() { return refreshToken; }
+  public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
+  public String getFirstname() { return firstname; }
+  public void setFirstname(String firstname) { this.firstname = firstname; }
+  public String getLastname() { return lastname; }
+  public void setLastname(String lastname) { this.lastname = lastname; }
+  public String getProfileImageUrl() { return profileImageUrl; }
+  public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 
   public static AuthenticationResponseBuilder builder() {
     return new AuthenticationResponseBuilder();
