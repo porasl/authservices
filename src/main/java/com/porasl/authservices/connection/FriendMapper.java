@@ -20,7 +20,6 @@ public final class FriendMapper {
         User requester = connection.getRequester();
         User target = connection.getTarget();
 
-        // Determine the "other" user safely
         User other = Objects.equals(requester.getId(), currentUser.getId())
                 ? target
                 : requester;
