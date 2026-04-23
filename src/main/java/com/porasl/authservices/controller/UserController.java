@@ -34,6 +34,23 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
+    @GetMapping("/by-id/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserProfileResponse> getUserById(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    UserProfileResponse response = new UserProfileResponse(
+                        String.valueOf(user.getId()),
+                        user.getEmail(),
+                        user.getFirstname(),
+                        user.getLastname(),
+                        user.getProfileImageUrl()
+                    );
+                    return ResponseEntity.ok(response);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    
     public static class UserProfileResponse {
         private final String id;
         private final String email;

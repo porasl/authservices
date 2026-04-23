@@ -96,5 +96,8 @@ kill $(lsof -tiTCP:8081 -sTCP:LISTEN)
 
 kill -9 $(lsof -tiTCP:8081 -sTCP:LISTEN)
 
+--------- nginx commands -----------
+
+
  
  -----------

@@ -185,4 +185,27 @@ public class ConnectionService {
 
         connRepo.delete(uc);
     }
+    
+    // ==========================================================
+    // CREATE AND AUTO-ACCEPT Connection
+    // ==========================================================
+    
+    @Transactional
+    public UserConnection createAndAutoAcceptConnectionByEmail(
+            long requesterUserId,
+            String targetEmail,
+            String notes) {
+            
+        // First create the connection request
+        UserConnection connection = createConnectionRequestByEmail(requesterUserId, targetEmail, notes);
+        
+        // If it's a new connection (status PENDING), auto-accept it
+        if (connection.getStatus() == Status.PENDING) {
+            connection.setStatus(Status.ACCEPTED);
+            connection.setUpdatedAt(java.time.Instant.now());
+            return connRepo.save(connection);
+        }
+        
+        return connection;
+    }
 }
