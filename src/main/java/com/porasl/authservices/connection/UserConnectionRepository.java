@@ -35,6 +35,11 @@ public interface UserConnectionRepository
     	    Status status
     	);
 
+    List<UserConnection> findAllByRequesterOrTarget(
+    	    User requester,
+    	    User target
+    	);
+
     List<UserConnection> findByRequesterIdAndStatus(
             Long requesterId,
             Status status

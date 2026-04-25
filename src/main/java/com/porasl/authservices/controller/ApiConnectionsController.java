@@ -1,6 +1,7 @@
 package com.porasl.authservices.controller;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -63,7 +64,8 @@ public class ApiConnectionsController {
             created.getTarget().getCreatedDate(),
             created.getNote(),
             created.getRequester().getId(),
-            created.getTarget().getId());
+            created.getTarget().getId(),
+            created.getStatus() != null ? created.getStatus().toString() : "UNKNOWN");
                 
         return ResponseEntity.status(HttpStatus.CREATED).body(friendSummaryDto);
     }
@@ -93,7 +95,8 @@ public class ApiConnectionsController {
             created.getTarget().getCreatedDate(),
             created.getNote(),
             created.getRequester().getId(),
-            created.getTarget().getId());
+            created.getTarget().getId(),
+            created.getStatus() != null ? created.getStatus().toString() : "UNKNOWN");
                 
         return ResponseEntity.status(HttpStatus.CREATED).body(friendSummaryDto);
     }
@@ -129,9 +132,21 @@ public class ApiConnectionsController {
             created.getTarget().getCreatedDate(),
             created.getNote(),
             created.getRequester().getId(),
-            created.getTarget().getId());
+            created.getTarget().getId(),
+            created.getStatus() != null ? created.getStatus().toString() : "UNKNOWN");
                 
         return ResponseEntity.status(HttpStatus.CREATED).body(friendSummaryDto);
+    }
+
+    // GET endpoint to list ALL connections (including PENDING)
+    @GetMapping(value = "/me/connections/all", produces = "application/json")
+    public ResponseEntity<List<FriendSummaryDto>> listAllConnections(@AuthenticationPrincipal Object principal) {
+        log.debug("GET /api/auth/me/connections/all called with principal: {}", Utils.principalInfo(principal));
+        Long meId = requireCurrentUserId(principal);
+        log.info("Listing all connections (including PENDING) for user {}", meId);
+
+        List<FriendSummaryDto> out = connectionService.listAllConnections(meId);
+        return ResponseEntity.ok(out == null ? java.util.Collections.emptyList() : out);
     }
 
     // --------------------------

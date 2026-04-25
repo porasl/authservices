@@ -49,6 +49,25 @@ public class ConnectionService {
     }
 
     // ==========================================================
+    // LIST ALL Connections (including PENDING)
+    // ==========================================================
+
+    public List<FriendSummaryDto> listAllConnections(Long userId) {
+
+        User me = userRepo.findById(userId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "User not found"));
+
+        List<UserConnection> connections =
+                connRepo.findAllByRequesterOrTarget(me, me);
+
+        return connections.stream()
+                .map(c -> FriendMapper.toDto(c, me))
+                .toList();
+    }
+
+    // ==========================================================
     // REQUEST CONNECTION
     // ==========================================================
 

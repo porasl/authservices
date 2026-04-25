@@ -35,7 +35,10 @@ public final class FriendMapper {
                         : null,                              // since ✅
                 connection.getNote(),
                 requester.getId(),                          // requesterId ✅
-                target.getId()                              // targetId ✅
+                target.getId(),                             // targetId ✅
+                connection.getStatus() != null 
+                        ? connection.getStatus().toString() 
+                        : "UNKNOWN"                         // status ✅
         );
     }
 }

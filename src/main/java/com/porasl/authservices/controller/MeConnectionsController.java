@@ -64,7 +64,8 @@ public class MeConnectionsController {
         	    created.getTarget().getCreatedDate(),
         	    created.getNote(),
         	    created.getRequester().getId(),
-        	    created.getTarget().getId());
+        	    created.getTarget().getId(),
+        	    created.getStatus() != null ? created.getStatus().toString() : "UNKNOWN");
         				
         				
         return ResponseEntity.status(HttpStatus.CREATED).body(friendSummaryDto);
@@ -80,14 +81,14 @@ public class MeConnectionsController {
         return ResponseEntity.ok(out == null ? java.util.Collections.emptyList() : out);
     }
 
-    // Alias
+    // Alias - now returns ALL connections including PENDING
     @GetMapping(value = "/connections", produces = "application/json")
     public ResponseEntity<List<FriendSummaryDto>> listFriendsAlias(@AuthenticationPrincipal Object principal) {
         log.debug("GET /me/connections called with principal: {}", Utils.principalInfo(principal));
         Long meId = requireCurrentUserId(principal);
-        log.info("Listing friends (alias) for user {}", meId);
+        log.info("Listing all connections (including PENDING) for user {}", meId);
 
-        List<FriendSummaryDto> out = connectionService.listAcceptedConnections(meId);
+        List<FriendSummaryDto> out = connectionService.listAllConnections(meId);
 
         return ResponseEntity.ok(out == null ? java.util.Collections.emptyList() : out);
     }
