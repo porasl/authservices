@@ -81,6 +81,36 @@ public class MeConnectionsController {
         return ResponseEntity.ok(out == null ? java.util.Collections.emptyList() : out);
     }
 
+    @PostMapping(value = "/connections/{email}/accept-by-email", produces = "application/json")
+    public ResponseEntity<UserConnection> acceptByEmail(
+            @AuthenticationPrincipal Object principal,
+            @PathVariable("email") String targetEmail) {
+        log.debug("POST /connections/{}/accept-by-email called", targetEmail);
+        Long meId = requireCurrentUserId(principal);
+        log.info("User {} accepting connection with email {}", meId, targetEmail);
+        UserConnection connection = connectionService.findConnectionByEmails(meId, targetEmail);
+        if (connection == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found");
+        }
+        return ResponseEntity.ok(connectionService.accept(meId, connection.getId()));
+    }
+    
+    @PostMapping(value = "/connections/{email}/reject-by-email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rejectByEmail(
+            @AuthenticationPrincipal Object principal,
+            @PathVariable("email") String targetEmail) {
+        log.debug("POST /connections/{}/reject-by-email called", targetEmail);
+        Long meId = requireCurrentUserId(principal);
+        log.info("User {} rejecting connection with email {}", meId, targetEmail);
+        UserConnection connection = connectionService.findConnectionByEmails(meId, targetEmail);
+        if (connection == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found");
+        }
+        connectionService.delete(meId, connection.getId());
+    }
+
+    
     // Alias - now returns ALL connections including PENDING
     @GetMapping(value = "/connections", produces = "application/json")
     public ResponseEntity<List<FriendSummaryDto>> listFriendsAlias(@AuthenticationPrincipal Object principal) {

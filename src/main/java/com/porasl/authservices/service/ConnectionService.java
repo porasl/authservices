@@ -227,4 +227,17 @@ public class ConnectionService {
         
         return connection;
     }
+    
+    public UserConnection findConnectionByEmails(Long currentUserId, String targetEmail) {
+        User currentUser = userRepo.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Current user not found"));
+        
+        User targetUser = userRepo.findByEmailIgnoreCase(targetEmail.trim())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Target user not found"));
+        
+        return connRepo.findByRequesterIdAndTargetId(currentUserId, targetUser.getId())
+                .or(() -> connRepo.findByRequesterIdAndTargetId(targetUser.getId(), currentUserId))
+                .orElse(null);
+    }
+
 }
