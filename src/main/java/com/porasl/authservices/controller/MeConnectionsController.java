@@ -82,7 +82,7 @@ public class MeConnectionsController {
     }
 
     @PostMapping(value = "/connections/{email}/accept-by-email", produces = "application/json")
-    public ResponseEntity<UserConnection> acceptByEmail(
+    public ResponseEntity<FriendSummaryDto> acceptByEmail(
             @AuthenticationPrincipal Object principal,
             @PathVariable("email") String targetEmail) {
         log.debug("POST /connections/{}/accept-by-email called", targetEmail);
@@ -92,7 +92,22 @@ public class MeConnectionsController {
         if (connection == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Connection not found");
         }
-        return ResponseEntity.ok(connectionService.accept(meId, connection.getId()));
+        
+        UserConnection accepted = connectionService.accept(meId, connection.getId());
+        FriendSummaryDto friendSummaryDto = new FriendSummaryDto(
+            accepted.getId(),
+            accepted.getTarget().getEmail(),
+            accepted.getTarget().getFirstname(),
+            accepted.getTarget().getLastname(),
+            accepted.getTarget().getProfileImageUrl(),
+            accepted.getTarget().getCreatedDate(),
+            accepted.getNote(),
+            accepted.getRequester().getId(),
+            accepted.getTarget().getId(),
+            accepted.getStatus() != null ? accepted.getStatus().toString() : "UNKNOWN"
+        );
+        
+        return ResponseEntity.ok(friendSummaryDto);
     }
     
     @PostMapping(value = "/connections/{email}/reject-by-email")
@@ -124,7 +139,7 @@ public class MeConnectionsController {
     }
 
     @PostMapping(value = "/connections/{id}/accept", produces = "application/json")
-    public ResponseEntity<UserConnection> accept(
+    public ResponseEntity<FriendSummaryDto> accept(
             @AuthenticationPrincipal Object principal,
             @PathVariable("id") Long connectionId) {
 
@@ -132,7 +147,21 @@ public class MeConnectionsController {
         Long meId = requireCurrentUserId(principal);
         log.info("User {} accepting connection {}", meId, connectionId);
 
-        return ResponseEntity.ok(connectionService.accept(meId, connectionId));
+        UserConnection accepted = connectionService.accept(meId, connectionId);
+        FriendSummaryDto friendSummaryDto = new FriendSummaryDto(
+            accepted.getId(),
+            accepted.getTarget().getEmail(),
+            accepted.getTarget().getFirstname(),
+            accepted.getTarget().getLastname(),
+            accepted.getTarget().getProfileImageUrl(),
+            accepted.getTarget().getCreatedDate(),
+            accepted.getNote(),
+            accepted.getRequester().getId(),
+            accepted.getTarget().getId(),
+            accepted.getStatus() != null ? accepted.getStatus().toString() : "UNKNOWN"
+        );
+
+        return ResponseEntity.ok(friendSummaryDto);
     }
 
     @DeleteMapping("/connections/{id}")
