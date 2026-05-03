@@ -172,7 +172,7 @@ public class ConnectionService {
                         new ResponseStatusException(
                                 HttpStatus.NOT_FOUND, "Connection not found"));
 
-        if (uc.getTarget().getId() !=me) {
+        if (!me.equals(uc.getTarget().getId())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Only the target may accept");
         }
